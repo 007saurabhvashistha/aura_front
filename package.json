@@ -1,27 +1,21 @@
 {
-  "name": "aura",
+  "name": "aura-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "Aura — an AI Relationship Platform (voice-first, memory, emotional intelligence).",
-  "license": "UNLICENSED",
+  "description": "Aura Frontend repository (React + Vite)",
   "workspaces": [
     "apps/*",
-    "services/*",
-    "packages/*"
+    "shared-ui"
   ],
   "scripts": {
-    "dev:web": "npm run dev --workspace @aura/web",
-    "dev:api": "npm run dev --workspace @aura/api",
+    "dev": "npm run dev --workspace @aura/web",
     "build:shared": "npm run build --workspace @aura/shared",
-    "build": "npm run build:shared && npm run build --workspace @aura/api && npm run build --workspace @aura/web",
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run build:shared && npm run typecheck --workspace @aura/api && npm run typecheck --workspace @aura/web",
-    "test": "npm run build:shared && npm run test --workspaces --if-present"
+    "build": "npm run build:shared && npm run build --workspace @aura/web",
+    "lint": "npm run lint --workspace @aura/web",
+    "typecheck": "npm run build:shared && npm run typecheck --workspace @aura/web",
+    "test": "npm run test --workspaces --if-present"
   },
   "engines": {
     "node": ">=20"
-  },
-  "devDependencies": {
-    "drizzle-orm": "^0.36.4"
   }
 }

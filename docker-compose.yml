@@ -1,30 +1,10 @@
-# Aura local development stack.
-# Usage: docker compose up --build
-
 services:
-  api:
-    build:
-      context: .
-      dockerfile: infrastructure/docker/api.Dockerfile
-    image: aura/api
-    environment:
-      NODE_ENV: production
-      API_PORT: 4000
-      CORS_ORIGIN: http://localhost:8080
-      DATABASE_URL: ${DATABASE_URL:-}
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change_me_access}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_refresh}
-    ports:
-      - "4000:4000"
-
   web:
     build:
       context: .
-      dockerfile: infrastructure/docker/web.Dockerfile
+      dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:4000
-    image: aura/web
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:4000}
+    image: aura/frontend
     ports:
       - "8080:80"
-    depends_on:
-      - api

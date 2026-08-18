@@ -13,27 +13,27 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
   if (!isOpen) return null;
 
   const sizeStyles = {
-    sm: 'w-96',
-    md: 'w-[500px]',
-    lg: 'w-[800px]',
+    sm: 'w-full max-w-md',
+    md: 'w-full max-w-2xl',
+    lg: 'w-full max-w-5xl',
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg ${sizeStyles[size]}`}>
-        <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+      <div className={`max-h-[90vh] overflow-hidden rounded-xl border border-admin-border bg-admin-bg-primary shadow-xl ${sizeStyles[size]}`}>
+        <div className="border-b border-admin-border px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-admin-text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-admin-text-secondary hover:text-admin-text-primary"
           >
             ✕
           </button>
         </div>
 
-        <div className="px-6 py-4">{children}</div>
+        <div className="max-h-[calc(90vh-8.5rem)] overflow-y-auto px-4 py-4 sm:px-6">{children}</div>
 
-        {footer && <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-2">{footer}</div>}
+        {footer && <div className="border-t border-admin-border px-4 py-3 sm:px-6 sm:py-4 flex justify-end gap-2 bg-admin-bg-secondary">{footer}</div>}
       </div>
     </div>
   );

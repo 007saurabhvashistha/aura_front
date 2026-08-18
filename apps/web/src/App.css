@@ -171,6 +171,12 @@ textarea:focus {
   border-color: #7a5cff;
 }
 
+.dob-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
 button {
   background: linear-gradient(90deg, #6a4bff, #7a5cff);
   color: white;

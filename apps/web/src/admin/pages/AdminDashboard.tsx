@@ -1,205 +1,370 @@
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
+import { PageHeader } from '../components/PageHeader';
+import { EmptyState } from '../components/EmptyState';
+import { ErrorState } from '../components/ErrorState';
+import { DemoNotice } from '../components/DemoNotice';
+import { useAgentRegistry } from '../hooks/useAgentRegistry';
+import { useIntegrationRegistry } from '../hooks/useIntegrationRegistry';
+import { useKnowledgeRegistry } from '../hooks/useKnowledgeRegistry';
+import { useToolRegistry } from '../hooks/useToolRegistry';
+import { useTestRuns } from '../hooks/useTestRuns';
+import {
+  demoControlPlaneOverviewService,
+  type AttentionItem,
+  type ControlPlaneDomainHealth,
+  type ControlPlaneMetric,
+  type HealthLevel,
+  type IntegrationHealthRow,
+  type OperationalHealthCard,
+  type RecentActivityItem,
+} from '../services/controlPlane';
 
-export function AdminDashboard() {
-  const metrics = [
-    { 
-      label: 'Total Users', 
-      value: '2,847', 
-      change: '+12.5%',
-      status: 'success'
-    },
-    { 
-      label: 'Active Sessions', 
-      value: '384', 
-      change: '+8.2%',
-      status: 'success'
-    },
-    { 
-      label: 'Total Conversations', 
-      value: '12,456', 
-      change: '+23.1%',
-      status: 'success'
-    },
-    { 
-      label: 'Platform Health', 
-      value: '99.8%', 
-      change: 'Stable',
-      status: 'healthy'
-    },
-  ];
+function healthBadge(level: HealthLevel): { label: string; variant: 'success' | 'warning' | 'danger' } {
+  if (level === 'critical') return { label: 'Critical', variant: 'danger' };
+  if (level === 'attention') return { label: 'Attention required', variant: 'warning' };
+  return { label: 'Healthy', variant: 'success' };
+}
 
-  const recentActivity = [
-    { user: 'Sarah Johnson', action: 'Started conversation', time: '2 minutes ago' },
-    { user: 'Mike Chen', action: 'Completed session', time: '15 minutes ago' },
-    { user: 'Emily Davis', action: 'Profile updated', time: '28 minutes ago' },
-    { user: 'Alex Kumar', action: 'Joined platform', time: '1 hour ago' },
-  ];
+function severityBadge(severity: AttentionItem['severity']): { label: string; variant: 'danger' | 'warning' | 'info' } {
+  if (severity === 'critical') return { label: 'Critical', variant: 'danger' };
+  if (severity === 'warning') return { label: 'Warning', variant: 'warning' };
+  return { label: 'Info', variant: 'info' };
+}
 
-  const systemServices = [
-    { name: 'API Server', status: 'healthy', latency: '45ms' },
-    { name: 'Database', status: 'healthy', latency: 'N/A' },
-    { name: 'Cache Layer', status: 'healthy', latency: '12ms' },
-    { name: 'WebSocket', status: 'healthy', latency: '28ms' },
-  ];
-
+function HealthDomainCard({ domain }: { domain: ControlPlaneDomainHealth }) {
+  const badge = healthBadge(domain.level);
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-admin-text-primary mb-2">Dashboard</h1>
-        <p className="text-secondary">Real-time overview of your platform performance and user activity.</p>
+    <Link className="cp-health-card" to={domain.href}>
+      <div className="cp-health-card-head">
+        <p className="cp-health-card-title">{domain.label}</p>
+        <Badge variant={badge.variant}>{badge.label}</Badge>
       </div>
+      <p className="cp-health-card-summary">{domain.summary}</p>
+      <p className="cp-health-card-reason">{domain.reason}</p>
+    </Link>
+  );
+}
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-4 gap-6">
-        {metrics.map((metric, idx) => (
-          <Card key={idx} variant="metric" className="hover:shadow-lg">
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-secondary">{metric.label}</p>
-              <div>
-                <p className="text-3xl font-bold text-admin-text-primary">{metric.value}</p>
-                <p className={`text-sm mt-1 font-medium ${
-                  metric.status === 'healthy' ? 'text-teal-600' : 'text-green-600'
-                }`}>
-                  {metric.change}
-                </p>
-              </div>
-              <Badge 
-                variant={metric.status === 'healthy' ? 'success' : 'success'}
-                className="text-xs"
-              >
-                {metric.status === 'healthy' ? 'Optimal' : 'Growing'}
-              </Badge>
-            </div>
-          </Card>
+function MetricCard({ metric }: { metric: ControlPlaneMetric }) {
+  const content = (
+    <Card variant="metric" className="cp-kpi-card">
+      <p className="cp-kpi-label">{metric.label}</p>
+      <p className="cp-kpi-value">{metric.value}</p>
+      <p className="cp-kpi-note">{metric.note}</p>
+      {metric.isDemo && (
+        <div className="cp-kpi-demo-row">
+          <Badge variant="info">Demo metric</Badge>
+        </div>
+      )}
+    </Card>
+  );
+
+  if (metric.href) {
+    return (
+      <Link to={metric.href} className="cp-kpi-link">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
+}
+
+function AttentionRow({ item }: { item: AttentionItem }) {
+  const badge = severityBadge(item.severity);
+  return (
+    <li className="cp-attention-item">
+      <div className="cp-attention-main">
+        <div className="cp-attention-title-row">
+          <Badge variant={badge.variant}>{badge.label}</Badge>
+          <p className="cp-attention-title">{item.resourceType} · {item.resourceName}</p>
+        </div>
+        <p className="cp-attention-reason">{item.reason}</p>
+        {item.timestamp && <p className="cp-attention-time">{item.timestamp}</p>}
+      </div>
+      <Link to={item.href} className="btn btn-ghost cp-attention-action">
+        {item.ctaLabel}
+      </Link>
+    </li>
+  );
+}
+
+function OperationalHealthCardView({ card }: { card: OperationalHealthCard }) {
+  const total = Math.max(card.segments.reduce((sum, segment) => sum + segment.count, 0), 1);
+  return (
+    <Card
+      title={card.title}
+      variant="default"
+      footer={
+        <Link to={card.href} className="cp-card-footer-link">
+          View all →
+        </Link>
+      }
+    >
+      <div className="cp-dist-bar" role="presentation">
+        {card.segments.map((segment) => (
+          <div
+            key={segment.key}
+            className={`cp-dist-segment is-${segment.key}`}
+            style={{ width: `${(segment.count / total) * 100}%` }}
+            title={`${segment.label}: ${segment.count}`}
+          />
         ))}
       </div>
+      <ul className="cp-dist-list">
+        {card.segments.map((segment) => (
+          <li key={segment.key}>
+            <span>{segment.label}</span>
+            <strong>{segment.count}</strong>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <div className="col-span-2">
-          <Card 
-            title="Recent Activity" 
-            description="User actions and engagement over the last hour"
-            variant="elevated"
-          >
-            <div className="space-y-4">
-              {recentActivity.map((activity, idx) => (
-                <div 
-                  key={idx} 
-                  className="flex items-center justify-between py-4 border-b border-admin-border last:border-b-0"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
-                      <span className="text-lg font-semibold text-primary-700">
-                        {activity.user.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-admin-text-primary text-sm">{activity.user}</p>
-                      <p className="text-xs text-secondary">{activity.action}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-secondary">{activity.time}</p>
-                </div>
+function ActivityList({ activities }: { activities: RecentActivityItem[] }) {
+  if (activities.length === 0) {
+    return (
+      <EmptyState
+        title="No recent activity"
+        description="Agent and workspace activity will appear here."
+      />
+    );
+  }
+
+  return (
+    <ol className="cp-activity-list">
+      {activities.map((activity) => (
+        <li key={activity.id} className="cp-activity-item">
+          <div>
+            <p className="cp-activity-title">{activity.message}</p>
+            <p className="cp-activity-meta">
+              {activity.resourceName} · {activity.timestamp}
+            </p>
+          </div>
+          <div className="cp-activity-actions">
+            {activity.isDemo && <Badge variant="info">Demo</Badge>}
+            <Link to={activity.href} className="btn btn-ghost">Open</Link>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function IntegrationHealthTable({ rows }: { rows: IntegrationHealthRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <EmptyState
+        title="No integration usage yet"
+        description="Integration status will appear when providers are configured and mapped to agents."
+      />
+    );
+  }
+
+  return (
+    <div className="admin-table-wrap">
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Capability</th>
+            <th>Status</th>
+            <th>Agents</th>
+            <th>Last tested</th>
+            <th aria-label="Actions" />
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.integrationId}>
+              <td>
+                <p className="admin-cell-title">{row.provider}</p>
+                <p className="admin-cell-sub">{row.name}</p>
+              </td>
+              <td className="admin-cell-sub">{row.capability}</td>
+              <td>
+                <Badge variant={row.status === 'connected' ? 'success' : 'warning'}>{row.status}</Badge>
+              </td>
+              <td className="admin-cell-sub">{row.agentsUsing}</td>
+              <td className="admin-cell-sub">{row.lastTested}</td>
+              <td>
+                <Link to={row.href} className="btn btn-ghost">Open</Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function AdminDashboard() {
+  const { agents } = useAgentRegistry();
+  const { agents: integrationBindings, integrations } = useIntegrationRegistry();
+  const { knowledgeBases } = useKnowledgeRegistry();
+  const { tools } = useToolRegistry();
+  const { runs } = useTestRuns();
+
+  const overview = useMemo(
+    () =>
+      demoControlPlaneOverviewService.createOverview({
+        agents,
+        integrationBindings,
+        integrations,
+        knowledgeBases,
+        tools,
+        testRuns: runs,
+      }),
+    [agents, integrationBindings, integrations, knowledgeBases, tools, runs],
+  );
+
+  const attentionItems = [
+    ...overview.attention.critical,
+    ...overview.attention.warning,
+    ...overview.attention.info,
+  ].slice(0, 10);
+
+  const overallBadge = healthBadge(overview.overallHealth);
+
+  if (!overview) {
+    return (
+      <div className="admin-page">
+        <ErrorState description="Unable to build control-plane overview." />
+      </div>
+    );
+  }
+
+  return (
+    <div className="admin-page cp-overview">
+      <PageHeader
+        title="Control Center"
+        description="Monitor and manage your Aura workspace."
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Control Center' }]}
+        actions={[
+          { label: 'Create Agent', variant: 'primary', href: '/admin/agents/create' },
+          { label: 'Test Center', variant: 'secondary', href: '/admin/test' },
+          { label: 'View Activity', variant: 'ghost', href: '/admin/activity' },
+        ]}
+      />
+
+      <section className="cp-health-strip">
+        <div className="cp-health-strip-head">
+          <h3>Platform Health</h3>
+          <Badge variant={overallBadge.variant}>{overallBadge.label}</Badge>
+        </div>
+        <div className="cp-health-grid">
+          {overview.domains.map((domain) => (
+            <HealthDomainCard key={domain.key} domain={domain} />
+          ))}
+        </div>
+      </section>
+
+      <section className="cp-kpi-grid">
+        {overview.metrics.map((metric) => (
+          <MetricCard key={metric.id} metric={metric} />
+        ))}
+      </section>
+
+      <section>
+        <DemoNotice message="Some runtime and cost metrics below are SIMULATED demo adapter values until backend telemetry is connected." />
+        <div className="cp-kpi-grid cp-kpi-grid-demo">
+          {overview.simulatedMetrics.map((metric) => (
+            <MetricCard key={metric.id} metric={metric} />
+          ))}
+        </div>
+      </section>
+
+      <section className="cp-main-grid">
+        <Card title="Attention Required" description="Issues that may require action.">
+          {attentionItems.length === 0 ? (
+            <EmptyState
+              title="All systems operational"
+              description="Nothing requires your attention right now."
+            />
+          ) : (
+            <ul className="cp-attention-list">
+              {attentionItems.map((item) => (
+                <AttentionRow key={item.id} item={item} />
               ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* System Status */}
-        <div>
-          <Card 
-            title="System Status" 
-            description="Service health & latency"
-            variant="elevated"
-          >
-            <div className="space-y-3">
-              {systemServices.map((service) => (
-                <div key={service.name} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-admin-text-primary">{service.name}</span>
-                    <Badge variant="success" className="text-xs">
-                      ✓ Up
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-secondary">Latency</span>
-                    <span className="font-mono font-semibold text-admin-text-primary">{service.latency}</span>
-                  </div>
-                  <div className="w-full h-1 bg-admin-bg-tertiary rounded-full overflow-hidden">
-                    <div className="h-full w-3/4 bg-gradient-to-r from-green-400 to-teal-500"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-6">
-        <Card title="Engagement Metrics" variant="elevated">
-          <div className="space-y-4">
-            {[
-              { label: 'Avg Session Duration', value: '12.4 min' },
-              { label: 'User Retention', value: '87.3%' },
-              { label: 'Satisfaction Score', value: '4.7/5.0' },
-            ].map((stat, idx) => (
-              <div key={idx} className="space-y-2">
-                <p className="text-xs text-secondary font-medium">{stat.label}</p>
-                <p className="text-2xl font-bold text-admin-text-primary">{stat.value}</p>
-              </div>
-            ))}
-          </div>
+            </ul>
+          )}
         </Card>
 
-        <Card title="Growth Trends" variant="elevated">
-          <div className="space-y-4">
-            {[
-              { label: 'Weekly Sign-ups', value: '+234', arrow: '↑' },
-              { label: 'Weekly Sessions', value: '+1,205', arrow: '↑' },
-              { label: 'Weekly Revenue', value: '+$3,245', arrow: '↑' },
-            ].map((stat, idx) => (
-              <div key={idx} className="space-y-2">
-                <p className="text-xs text-secondary font-medium">{stat.label}</p>
-                <p className="text-2xl font-bold text-green-600">{stat.arrow} {stat.value}</p>
-              </div>
-            ))}
-          </div>
+        <Card title="Recent Activity" description="Aggregated from agent, knowledge, and integration state.">
+          <ActivityList activities={overview.recentActivity} />
         </Card>
+      </section>
 
-        <Card title="Quick Actions" variant="elevated">
-          <div className="space-y-3">
-            <button className="w-full px-4 py-2 bg-primary-600 text-white rounded-md font-medium text-sm hover:bg-primary-700 transition-colors">
-              View All Users
-            </button>
-            <button className="w-full px-4 py-2 bg-admin-bg-tertiary text-admin-text-primary rounded-md font-medium text-sm hover:bg-admin-border transition-colors">
-              Export Reports
-            </button>
-            <button className="w-full px-4 py-2 bg-admin-bg-tertiary text-admin-text-primary rounded-md font-medium text-sm hover:bg-admin-border transition-colors">
-              System Settings
-            </button>
+      <section>
+        <div className="cp-section-head">
+          <h3>Operational Health</h3>
+        </div>
+        <div className="cp-operational-grid">
+          {overview.operationalHealth.map((card) => (
+            <OperationalHealthCardView key={card.key} card={card} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="cp-section-head">
+          <h3>Agent Activity Summary</h3>
+        </div>
+        {overview.agentSummary.length === 0 ? (
+          <EmptyState
+            title="No agents yet"
+            description="Create your first AI agent to start operating Aura."
+            action={<Link to="/admin/agents/create" className="btn btn-primary">Create Agent</Link>}
+          />
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Status</th>
+                  <th>Version</th>
+                  <th>Integrations</th>
+                  <th>Knowledge</th>
+                  <th>Tools</th>
+                  <th>Last activity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overview.agentSummary.map((row) => (
+                  <tr key={row.agentId}>
+                    <td>
+                      <Link to={`/admin/agents/${row.agentId}`} className="admin-link-cell">{row.agentName}</Link>
+                    </td>
+                    <td>
+                      <Badge variant={row.status === 'published' ? 'success' : row.status === 'disabled' ? 'warning' : 'info'}>
+                        {row.status}
+                      </Badge>
+                    </td>
+                    <td className="admin-cell-sub">{row.version}</td>
+                    <td className="admin-cell-sub">{row.integrationSummary}</td>
+                    <td className="admin-cell-sub">{row.knowledgeSummary}</td>
+                    <td className="admin-cell-sub">{row.toolSummary}</td>
+                    <td className="admin-cell-sub">{row.lastActivity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </Card>
-      </div>
+        )}
+      </section>
 
-      {/* Info Banner */}
-      <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 flex gap-4">
-        <div className="flex-shrink-0">
-          <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zM8 7a1 1 0 000 2h6a1 1 0 000-2H8zm0 3a1 1 0 000 2h3a1 1 0 000-2H8z" clipRule="evenodd" />
-          </svg>
+      <section>
+        <div className="cp-section-head">
+          <h3>Integration Health</h3>
         </div>
-        <div>
-          <h3 className="font-semibold text-teal-900 mb-1">Platform Status Excellent</h3>
-          <p className="text-sm text-teal-700">
-            All systems operational. 99.8% uptime maintained. Real-time data syncing with backend.
-          </p>
-        </div>
-      </div>
+        <IntegrationHealthTable rows={overview.integrationHealth} />
+      </section>
     </div>
   );
 }

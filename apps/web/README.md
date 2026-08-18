@@ -1,4 +1,4 @@
-# Aura Web (`apps/web`)
+﻿# Aura Web (`apps/web`)
 
 React + Vite + TypeScript frontend for Aura.
 
@@ -22,11 +22,12 @@ to the client. `VITE_API_BASE_URL` points to the backend (default
 
 ```
 src/
-├── main.tsx        # React entry
-├── App.tsx         # Root component (shows backend health)
-├── lib/
-│   └── api.ts      # Typed API client (uses @aura/shared)
-├── App.css
-├── index.css
-└── vite-env.d.ts
+â”œâ”€â”€ main.tsx        # React entry
+â”œâ”€â”€ App.tsx         # Root component (shows backend health)
+â”œâ”€â”€ lib/
+â”‚   â””â”€â”€ api.ts      # Typed API client (uses shared-ui/@aura/shared)
+â”œâ”€â”€ App.css
+â”œâ”€â”€ index.css
+â””â”€â”€ vite-env.d.ts
 ```
+

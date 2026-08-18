@@ -7,15 +7,62 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [isDesktop, setIsDesktop] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    const onResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      setSidebarOpen(desktop);
+    };
+
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const closeSidebarOnMobile = () => {
+    if (!isDesktop) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleSidebarToggle = () => {
+    if (isDesktop) {
+      setSidebarCollapsed((prev) => !prev);
+      return;
+    }
+    setSidebarOpen((prev) => !prev);
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar isOpen={sidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar onSidebarToggle={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">{children}</div>
+    <div className="admin-layout-root">
+      {!isDesktop && sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={closeSidebarOnMobile}
+          className="admin-sidebar-backdrop"
+        />
+      )}
+
+      <Sidebar
+        isOpen={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        isDesktop={isDesktop}
+        onNavigate={closeSidebarOnMobile}
+        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+      />
+
+      <div
+        className="admin-layout-main"
+        style={{ paddingLeft: isDesktop ? `${sidebarCollapsed ? 80 : 288}px` : '0' }}
+      >
+        <Topbar onSidebarToggle={handleSidebarToggle} />
+        <main className="admin-layout-content">
+          <div className="admin-layout-content-inner">{children}</div>
         </main>
       </div>
     </div>

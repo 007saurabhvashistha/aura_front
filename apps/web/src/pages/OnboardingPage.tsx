@@ -7,6 +7,28 @@ import { SUPPORTED_LANGUAGES } from '../lib/catalogues';
 
 type Step = 'name' | 'age' | 'language' | 'done';
 
+const CURRENT_YEAR = new Date().getFullYear();
+const DOB_YEARS = Array.from({ length: 100 }, (_, i) => String(CURRENT_YEAR - i));
+const DOB_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+].map((label, index) => ({ value: String(index + 1).padStart(2, '0'), label }));
+
+function daysInMonth(year: string, month: string): number {
+  if (!year || !month) return 31;
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
 /**
  * Minimal, required-first onboarding. Only display name, 18+ age verification,
  * and primary language are required — everything else is optional and lives on
@@ -17,10 +39,17 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('name');
   const [displayName, setDisplayName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [dobYear, setDobYear] = useState('');
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobDay, setDobDay] = useState('');
   const [primaryLanguage, setPrimaryLanguage] = useState('en');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const dayOptions = Array.from({ length: daysInMonth(dobYear, dobMonth) }, (_, i) =>
+    String(i + 1).padStart(2, '0'),
+  );
+  const dateOfBirth = dobYear && dobMonth && dobDay ? `${dobYear}-${dobMonth}-${dobDay}` : '';
 
   async function saveName() {
     setError(null);
@@ -97,12 +126,48 @@ export function OnboardingPage() {
             <p className="muted">Aura is an 18+ experience. Your date of birth is not stored.</p>
             <label>
               Date of birth
-              <input
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                required
-              />
+              <div className="dob-row">
+                <select
+                  aria-label="Birth month"
+                  value={dobMonth}
+                  onChange={(e) => {
+                    const month = e.target.value;
+                    setDobMonth(month);
+                    if (Number(dobDay) > daysInMonth(dobYear, month)) setDobDay('');
+                  }}
+                >
+                  <option value="">Month</option>
+                  {DOB_MONTHS.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+                <select aria-label="Birth day" value={dobDay} onChange={(e) => setDobDay(e.target.value)}>
+                  <option value="">Day</option>
+                  {dayOptions.map((day) => (
+                    <option key={day} value={day}>
+                      {Number(day)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Birth year"
+                  value={dobYear}
+                  onChange={(e) => {
+                    const year = e.target.value;
+                    setDobYear(year);
+                    if (Number(dobDay) > daysInMonth(year, dobMonth)) setDobDay('');
+                  }}
+                >
+                  <option value="">Year</option>
+                  {DOB_YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
             <button type="button" disabled={busy || !dateOfBirth} onClick={verifyAge}>
               Verify

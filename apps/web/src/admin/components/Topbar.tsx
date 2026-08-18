@@ -1,5 +1,5 @@
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { useDarkMode } from '../hooks/useDarkMode';
 import { Button } from './Button';
 
 interface TopbarProps {
@@ -8,7 +8,24 @@ interface TopbarProps {
 
 export function Topbar({ onSidebarToggle }: TopbarProps) {
   const { user, logout } = useAuth();
-  const { isDark, toggle } = useDarkMode();
+  const location = useLocation();
+
+  const segments = location.pathname.split('/').filter(Boolean);
+  const adminSegments = segments[0] === 'admin' ? segments.slice(1) : segments;
+  const groupLabel =
+    adminSegments[0] === 'agents'
+      ? 'Agents'
+      : adminSegments[0] === 'integrations'
+        ? 'Integrations'
+        : adminSegments[0] === 'conversations'
+          ? 'Conversations'
+          : 'Overview';
+  const routeLabel = adminSegments.length === 0
+    ? 'Dashboard'
+    : adminSegments
+        .map((part) => part.replace(/-/g, ' '))
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' / ');
 
   const handleLogout = async () => {
     await logout();
@@ -16,79 +33,67 @@ export function Topbar({ onSidebarToggle }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-admin-bg-primary border-b border-admin-border px-8 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-6 flex-1">
-        <button
-          onClick={onSidebarToggle}
-          className="p-2 hover:bg-admin-bg-tertiary rounded-lg transition-all duration-200 text-admin-text-secondary hover:text-admin-text-primary"
-          title="Toggle sidebar"
-        >
-          <svg 
-            className="w-6 h-6" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+    <header className="admin-topbar">
+      <div className="admin-topbar-inner">
+        <div className="admin-topbar-left">
+          <button
+            onClick={onSidebarToggle}
+            className="admin-icon-button"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={1.5} 
-              d="M4 6h16M4 12h16M4 18h16" 
-            />
-          </svg>
-        </button>
-        <div>
-          <h2 className="text-sm font-semibold text-admin-text-primary">Admin Console</h2>
-          <p className="text-xs text-secondary">Aura Platform</p>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div className="admin-topbar-title-wrap">
+            <p className="admin-topbar-crumbs">{groupLabel} / {routeLabel}</p>
+            <h2 className="admin-topbar-title">{routeLabel}</h2>
+          </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-6">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggle}
-          className="p-2 hover:bg-admin-bg-tertiary rounded-lg transition-all duration-200 text-admin-text-secondary hover:text-admin-text-primary"
-          title={isDark ? 'Light mode' : 'Dark mode'}
-        >
-          {isDark ? (
-            <svg 
-              className="w-5 h-5" 
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zm12-1.5a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V11.25a.75.75 0 01.75-.75zM7.5 20.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75z" />
+        <div className="admin-topbar-search">
+          <svg className="admin-topbar-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            aria-label="Search"
+            placeholder="Search modules, agents, integrations"
+            className="admin-topbar-search-input"
+          />
+          <span className="admin-topbar-search-hint">Ctrl+K</span>
+        </div>
+
+        <div className="admin-topbar-actions">
+          <Link to="/admin/agents/create" className="btn btn-secondary admin-topbar-new-agent">
+            New Agent
+          </Link>
+
+          <button type="button" className="admin-icon-button" title="Help">
+            ?
+          </button>
+
+          <button type="button" className="admin-icon-button" title="Notifications">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
             </svg>
-          ) : (
-            <svg 
-              className="w-5 h-5" 
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          )}
-        </button>
+          </button>
 
-        {/* Divider */}
-        <div className="h-6 w-px bg-admin-border"></div>
+          <div className="admin-topbar-divider" />
 
-        {/* User Menu */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-sm font-semibold text-admin-text-primary">
+          <div className="admin-topbar-user-meta">
+            <p className="admin-topbar-user-name">
               {user?.email?.split('@')[0] || 'Admin'}
             </p>
-            <p className="text-xs text-secondary">Administrator</p>
+            <p className="admin-topbar-user-role">Administrator</p>
           </div>
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md">
+
+          <div className="admin-topbar-avatar">
             {user?.email?.charAt(0).toUpperCase() || 'A'}
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
-            className="text-xs"
-          >
+
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="admin-topbar-logout">
             Logout
           </Button>
         </div>

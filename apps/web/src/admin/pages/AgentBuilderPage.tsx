@@ -15,6 +15,9 @@ import {
 } from '../hooks/useIntegrationRegistry';
 import { useAgentRegistry, type AgentConfig } from '../hooks/useAgentRegistry';
 import { useKnowledgeRegistry, getKnowledgeReadiness, knowledgeReadinessReason } from '../hooks/useKnowledgeRegistry';
+import { useToolRegistry, getToolReadiness } from '../hooks/useToolRegistry';
+import { useTestRuns } from '../hooks/useTestRuns';
+import type { TestType } from '../services/testCenter';
 import { knowledgeReadinessBadge } from '../components/statusMaps';
 
 type StepKey =
@@ -283,6 +286,8 @@ export function AgentBuilderPage() {
   const { integrations, agents: integrationBindings, setAgentIntegrationRefs } = useIntegrationRegistry();
   const { getAgentById, createAgent, updateAgent, publishAgent } = useAgentRegistry();
   const { knowledgeBases, assignAgent: assignKnowledgeAgent, removeAgent: removeKnowledgeAgent } = useKnowledgeRegistry();
+  const { tools } = useToolRegistry();
+  const { runTest } = useTestRuns();
   const navigate = useNavigate();
   const { agentId } = useParams();
   const isEditMode = Boolean(agentId);
@@ -485,6 +490,8 @@ export function AgentBuilderPage() {
     () => {
       const assignedKbs = savedAgentId ? knowledgeBases.filter((kb) => kb.assignedAgentIds.includes(savedAgentId)) : [];
       const knowledgeReady = assignedKbs.every((kb) => getKnowledgeReadiness(kb) === 'READY');
+      const assignedTools = savedAgentId ? tools.filter((tool) => tool.assignedAgentIds.includes(savedAgentId)) : [];
+      const toolsReady = assignedTools.every((tool) => getToolReadiness(tool) === 'READY');
       return [
         { label: 'Basic profile complete', ok: validateStep('basic').length === 0 },
         { label: 'Brain prompt configured', ok: validateStep('brain').length === 0 },
@@ -492,11 +499,12 @@ export function AgentBuilderPage() {
         { label: 'Intelligence setup valid', ok: validateStep('intelligence').length === 0 },
         { label: 'Knowledge source attached', ok: validateStep('knowledge').length === 0 },
         { label: 'Assigned knowledge bases ready', ok: knowledgeReady },
+        { label: 'Assigned tools ready', ok: toolsReady },
         { label: 'Integrations validated', ok: validateStep('integrations').length === 0 },
         { label: 'Test scenario defined', ok: validateStep('test').length === 0 },
       ];
     },
-    [draft, integrations, knowledgeBases, savedAgentId],
+    [draft, integrations, knowledgeBases, tools, savedAgentId],
   );
 
   const publishReady = publishReadiness.every((item) => item.ok);
@@ -712,78 +720,51 @@ export function AgentBuilderPage() {
     }));
   };
 
+  // All builder tests go through the shared Test Center service so results match
+  // what /admin/test reports for the same agent.
+  const runBuilderTest = (
+    testType: TestType,
+    input: string,
+    setStatus: (status: TestStatus) => void,
+    setResult: (message: string) => void,
+  ) => {
+    if (!savedAgentId) {
+      setStatus('error');
+      setResult('Save the agent draft first — tests run against saved agent resources.');
+      return;
+    }
+
+    setStatus('running');
+    const run = runTest({
+      agentId: savedAgentId,
+      versionLabel: 'draft',
+      environment: 'demo',
+      testType,
+      input: input.trim() || 'Builder test',
+    });
+    setStatus(run.status === 'passed' ? 'success' : 'error');
+    setResult(
+      run.status === 'passed'
+        ? `${run.output} (${run.totalLatencyMs} ms)`
+        : run.errors.join(' ') || 'Test failed.',
+    );
+  };
+
   const runTextTest = () => {
     if (!isNonEmpty(testMessage)) {
       setTestStatus('error');
       setTestResult('Enter a text message to run test conversation.');
       return;
     }
-    if (validateStep('brain').length > 0 || validateStep('intelligence').length > 0) {
-      setTestStatus('error');
-      setTestResult('Configure Brain and Intelligence steps before text testing.');
-      return;
-    }
-
-    setTestStatus('running');
-    setTestResult('Running simulated text conversation...');
-
-    setTimeout(() => {
-      setTestStatus('success');
-      setTestResult(
-        `Simulated response from ${draft.model}: Intent parsed, policy checks passed, and response generated with ${draft.tone} tone.`,
-      );
-    }, 650);
+    runBuilderTest('conversation', testMessage, setTestStatus, setTestResult);
   };
 
   const runVoiceTest = () => {
-    if (validateStep('voice').length > 0) {
-      setVoiceTestStatus('error');
-      setVoiceTestResult('Voice step has validation errors. Resolve them before running voice test.');
-      return;
-    }
-    if (!isConnectedIntegration(selectedVoiceIntegration) || !isConnectedIntegration(selectedRealtimeIntegration)) {
-      setVoiceTestStatus('error');
-      setVoiceTestResult('Connected voice and realtime integrations are required for voice test.');
-      return;
-    }
-
-    setVoiceTestStatus('running');
-    setVoiceTestResult('Running simulated voice synthesis and stream check...');
-
-    setTimeout(() => {
-      setVoiceTestStatus('success');
-      setVoiceTestResult(
-        `Voice test successful: ${draft.voiceProvider}/${draft.voiceName || 'default'} in ${draft.language} at speed ${draft.speed}.`,
-      );
-    }, 700);
+    runBuilderTest('voice', draft.testScenario || 'Voice readiness check', setVoiceTestStatus, setVoiceTestResult);
   };
 
   const runToolExecutionTest = () => {
-    const enabledTools = [
-      draft.customApiEnabled ? 'Custom API' : '',
-      isConnectedIntegration(selectedRealtimeIntegration) ? 'LiveKit' : '',
-      isConnectedIntegration(selectedVoiceIntegration) ? 'Cartesia' : '',
-      draft.telephonyEnabled && isConnectedIntegration(selectedCallingIntegration) ? 'Telephony' : '',
-    ].filter(Boolean);
-
-    if (enabledTools.length === 0) {
-      setToolTestStatus('error');
-      setToolTestResult('Enable at least one integration/tool before tool execution test.');
-      return;
-    }
-    if (draft.customApiEnabled && !isHttpUrl(draft.customApiBaseUrl)) {
-      setToolTestStatus('error');
-      setToolTestResult('Custom API base URL is invalid.');
-      return;
-    }
-
-    setToolTestStatus('running');
-    setToolTestResult('Executing simulated tool chain...');
-
-    setTimeout(() => {
-      setToolTestStatus('success');
-      setToolTestResult(`Tool execution test passed for: ${enabledTools.join(', ')}.`);
-    }, 650);
+    runBuilderTest('tool', draft.testScenario || 'Tool execution check', setToolTestStatus, setToolTestResult);
   };
 
   const handleVoiceIntegrationSelection = (integrationId: IntegrationType | '') => {

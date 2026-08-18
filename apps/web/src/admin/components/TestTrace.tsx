@@ -1,0 +1,34 @@
+import { Link } from 'react-router-dom';
+import { Badge } from './Badge';
+import type { TestRunResult, TestStatus } from '../services/testCenter';
+
+function statusVariant(status: TestStatus): 'success' | 'danger' | 'default' {
+  if (status === 'passed') return 'success';
+  if (status === 'failed') return 'danger';
+  return 'default';
+}
+
+// Shared execution trace: Input -> Agent -> Knowledge/Tool/Integration -> Output.
+export function TestTrace({ result }: { result: TestRunResult }) {
+  return (
+    <div className="tc-trace">
+      {result.trace.map((step) => (
+        <div key={step.id} className={`tc-trace-step is-${step.status}`}>
+          <div className="tc-trace-head">
+            <span className="tc-trace-stage">{step.stage}</span>
+            <p className="admin-cell-title">{step.label}</p>
+            <Badge variant={statusVariant(step.status)}>{step.status}</Badge>
+            <span className="tc-trace-latency">{step.latencyMs} ms</span>
+          </div>
+          <p className="admin-cell-sub">{step.detail}</p>
+          {step.error && <p className="tc-trace-error">{step.error}</p>}
+          {step.href && (
+            <Link to={step.href} className="tc-trace-link">
+              Open {step.resourceType ?? 'resource'} →
+            </Link>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
