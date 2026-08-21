@@ -201,7 +201,7 @@ export function OnboardingPage() {
               Aura will learn the rest through conversation. You can add interests, a communication
               style, and more anytime from your profile.
             </p>
-            <button type="button" onClick={() => navigate('/', { replace: true })}>
+            <button type="button" onClick={() => navigate('/app', { replace: true })}>
               Enter Aura
             </button>
             <button type="button" className="ghost" onClick={() => navigate('/profile')}>

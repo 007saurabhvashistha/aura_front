@@ -2,6 +2,10 @@ import type { AgentActivityType, ControlPlaneAgent } from '../../hooks/useAgentR
 import type { IntegrationRecord } from '../../hooks/useIntegrationRegistry';
 import type { KnowledgeActivityType, KnowledgeBase } from '../../hooks/useKnowledgeRegistry';
 import type { Tool, ToolActivityType } from '../../hooks/useToolRegistry';
+import type { CallSession, Conversation, ConversationActivityType } from '../../hooks/useConversationRegistry';
+import type { ProfileActivityType, SocialProfile } from '../../hooks/useSocialRegistry';
+import type { Companion } from '../companion';
+import { CALL_STATUS_LABELS, CHANNEL_LABELS, ENTITY_TYPE_LABELS } from '../social';
 import { TEST_ENVIRONMENT_LABELS, TEST_TYPE_LABELS, type TestRunResult } from '../testCenter';
 import type {
   ActivityCategory,
@@ -41,6 +45,19 @@ function toolCategory(type: ToolActivityType): ActivityCategory {
   if (type === 'tested' || type === 'test_failed' || type === 'dry_run') return 'test';
   if (type === 'validated' || type === 'validation_failed') return 'processing';
   return 'lifecycle';
+}
+
+function profileCategory(type: ProfileActivityType): ActivityCategory {
+  if (type === 'call_started' || type === 'call_ended') return 'call';
+  if (type === 'conversation_started') return 'conversation';
+  if (type === 'profile_updated' || type === 'presence_changed' || type === 'discovery_changed') return 'configuration';
+  if (type === 'profile_created') return 'lifecycle';
+  return 'social';
+}
+
+function conversationCategory(type: ConversationActivityType): ActivityCategory {
+  if (type.startsWith('call_')) return 'call';
+  return 'conversation';
 }
 
 // Status comes from the action type and the message, because some registries log
@@ -195,6 +212,115 @@ function testEvents(testRuns: TestRunResult[]): ActivityEvent[] {
   }));
 }
 
+function profileEvents(profiles: SocialProfile[]): ActivityEvent[] {
+  return profiles.flatMap((profile) =>
+    profile.activity.map((entry) => ({
+      id: entry.id,
+      timestamp: entry.timestamp,
+      actor: entry.actor,
+      action: entry.type,
+      summary: entry.message,
+      resourceType: 'profile' as const,
+      resourceId: profile.id,
+      resourceName: profile.displayName,
+      status: statusFromType(entry.type, entry.message),
+      category: profileCategory(entry.type),
+      href: `/admin/people/${profile.id}`,
+      isSimulated: true,
+      metadata: {
+        'Entity type': ENTITY_TYPE_LABELS[profile.type],
+        Handle: profile.handle,
+        Presence: profile.presence,
+        Discoverable: profile.discoverable ? 'Yes' : 'No',
+        'Linked agent': profile.agentId ?? '—',
+      },
+    })),
+  );
+}
+
+function conversationEvents(conversations: Conversation[]): ActivityEvent[] {
+  return conversations.flatMap((conversation) =>
+    conversation.activity.map((entry) => ({
+      id: entry.id,
+      timestamp: entry.timestamp,
+      actor: entry.actor,
+      action: entry.type,
+      summary: entry.message,
+      resourceType: 'conversation' as const,
+      resourceId: conversation.id,
+      resourceName: conversation.participantName,
+      status: statusFromType(entry.type, entry.message),
+      category: conversationCategory(entry.type),
+      href: `/admin/conversations/${conversation.id}`,
+      isSimulated: true,
+      metadata: {
+        'Entity type': ENTITY_TYPE_LABELS[conversation.entityType],
+        Channel: CHANNEL_LABELS[conversation.channel],
+        Status: conversation.status,
+        'Linked agent': conversation.agentId ?? 'None (real person)',
+        Messages: String(conversation.messages.length),
+      },
+    })),
+  );
+}
+
+function callEvents(calls: CallSession[]): ActivityEvent[] {
+  return calls.flatMap((call) =>
+    call.events.map((event) => ({
+      id: event.id,
+      timestamp: event.timestamp,
+      actor: 'Aman Ops',
+      action: `call_${event.status}`,
+      summary: `${CALL_STATUS_LABELS[event.status]} · ${event.note}`,
+      resourceType: 'call' as const,
+      resourceId: call.id,
+      resourceName: call.participantName,
+      status:
+        event.status === 'failed' || event.status === 'declined'
+          ? ('failure' as const)
+          : event.status === 'ended'
+            ? ('info' as const)
+            : ('success' as const),
+      category: 'call' as const,
+      href: `/admin/conversations/${call.conversationId}/calls`,
+      isSimulated: true,
+      metadata: {
+        'Entity type': ENTITY_TYPE_LABELS[call.entityType],
+        Kind: call.kind,
+        'Call status': CALL_STATUS_LABELS[call.status],
+        Started: call.startedAt,
+        Ended: call.endedAt ?? '—',
+      },
+    })),
+  );
+}
+
+function companionEvents(companions: Companion[]): ActivityEvent[] {
+  return companions.map((companion) => ({
+    id: `companion-${companion.id}-${companion.status}`,
+    timestamp: new Date().toISOString().slice(0, 16).replace('T', ' '),
+    actor: 'System',
+    action: 'companion_resolved',
+    summary: `${companion.displayName} resolved as a ${companion.source} companion with ${companion.capabilities.filter((capability) => capability.available).length} available capabilities.`,
+    resourceType: 'companion' as const,
+    resourceId: companion.id,
+    resourceName: companion.displayName,
+    status: companion.status === 'unavailable' ? ('failure' as const) : ('info' as const),
+    category: 'configuration' as const,
+    href: `/admin/people/${companion.profileId}`,
+    isSimulated: companion.source !== 'REAL',
+    metadata: {
+      'Entity type': ENTITY_TYPE_LABELS[companion.type],
+      Source: companion.source,
+      Capabilities: companion.capabilities
+        .filter((capability) => capability.available)
+        .map((capability) => capability.key)
+        .join(', '),
+      Availability: companion.availability.reason,
+    },
+  }));
+}
+
 export class DemoActivityAdapter implements ActivityService {
   readonly mode = 'SIMULATED' as const;
 
@@ -205,6 +331,10 @@ export class DemoActivityAdapter implements ActivityService {
       ...toolEvents(context.tools),
       ...integrationEvents(context.integrations),
       ...testEvents(context.testRuns),
+      ...companionEvents(context.companions ?? []),
+      ...profileEvents(context.profiles ?? []),
+      ...conversationEvents(context.conversations ?? []),
+      ...callEvents(context.calls ?? []),
     ]
       .filter((event) => matches(event, query))
       .sort((a, b) => parseStamp(b.timestamp) - parseStamp(a.timestamp));

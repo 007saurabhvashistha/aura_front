@@ -11,6 +11,7 @@ import { useIntegrationRegistry } from '../hooks/useIntegrationRegistry';
 import { useKnowledgeRegistry } from '../hooks/useKnowledgeRegistry';
 import { useToolRegistry } from '../hooks/useToolRegistry';
 import { useTestRuns } from '../hooks/useTestRuns';
+import { useConversationRegistry } from '../hooks/useConversationRegistry';
 import {
   demoControlPlaneOverviewService,
   type AttentionItem,
@@ -209,6 +210,7 @@ export function AdminDashboard() {
   const { knowledgeBases } = useKnowledgeRegistry();
   const { tools } = useToolRegistry();
   const { runs } = useTestRuns();
+  const { conversations, calls } = useConversationRegistry();
 
   const overview = useMemo(
     () =>
@@ -219,8 +221,10 @@ export function AdminDashboard() {
         knowledgeBases,
         tools,
         testRuns: runs,
+        conversations,
+        calls,
       }),
-    [agents, integrationBindings, integrations, knowledgeBases, tools, runs],
+    [agents, integrationBindings, integrations, knowledgeBases, tools, runs, conversations, calls],
   );
 
   const attentionItems = [
@@ -271,7 +275,7 @@ export function AdminDashboard() {
       </section>
 
       <section>
-        <DemoNotice message="Some runtime and cost metrics below are SIMULATED demo adapter values until backend telemetry is connected." />
+        <DemoNotice message="Social and live-interaction metrics below are DERIVED from in-memory demo state (no invented numbers) until backend telemetry is connected." />
         <div className="cp-kpi-grid cp-kpi-grid-demo">
           {overview.simulatedMetrics.map((metric) => (
             <MetricCard key={metric.id} metric={metric} />

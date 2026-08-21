@@ -1,11 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { AdminRoute } from './AdminRoute';
 import { AdminLayout } from '../components/AdminLayout';
-import { IntegrationRegistryProvider } from '../hooks/useIntegrationRegistry';
-import { KnowledgeRegistryProvider } from '../hooks/useKnowledgeRegistry';
-import { ToolRegistryProvider } from '../hooks/useToolRegistry';
-import { AgentRegistryProvider } from '../hooks/useAgentRegistry';
-import { TestRunsProvider } from '../hooks/useTestRuns';
 import { AdminDashboard } from '../pages/AdminDashboard';
 import { AdminModulePage } from '../pages/AdminModulePage';
 import { AgentBuilderPage } from '../pages/AgentBuilderPage';
@@ -19,6 +14,9 @@ import { ToolDetailPage } from '../pages/ToolDetailPage';
 import { TeamPage } from '../pages/TeamPage';
 import { IntegrationsPage } from '../pages/IntegrationsPage';
 import { ConversationsPage } from '../pages/ConversationsPage';
+import { ConversationDetailPage } from '../pages/ConversationDetailPage';
+import { PeoplePage } from '../pages/PeoplePage';
+import { ProfileDetailPage } from '../pages/ProfileDetailPage';
 import { SessionsPage } from '../pages/SessionsPage';
 import { AnalyticsPage } from '../pages/AnalyticsPage';
 import { SettingsPage } from '../pages/SettingsPage';
@@ -31,13 +29,8 @@ import { TestRunDetailPage } from '../pages/TestRunDetailPage';
 export function AdminRoutes() {
   return (
     <AdminRoute>
-      <IntegrationRegistryProvider>
-        <KnowledgeRegistryProvider>
-          <ToolRegistryProvider>
-            <AgentRegistryProvider>
-              <TestRunsProvider>
-                <AdminLayout>
-                <Routes>
+      <AdminLayout>
+        <Routes>
           <Route path="/" element={<AdminDashboard />} />
           <Route path="/agents/create" element={<AgentBuilderPage />} />
           <Route path="/agents/:agentId/edit" element={<AgentBuilderPage />} />
@@ -115,8 +108,14 @@ export function AdminRoutes() {
           <Route path="/team" element={<TeamPage />} />
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/conversations" element={<ConversationsPage />} />
-          <Route path="/conversations/live" element={<ConversationsPage />} />
-          <Route path="/conversations/history" element={<ConversationsPage />} />
+          <Route path="/conversations/live" element={<ConversationsPage initialTab="live" />} />
+          <Route path="/conversations/history" element={<ConversationsPage initialTab="history" />} />
+          <Route path="/conversations/calls" element={<ConversationsPage initialTab="calls" />} />
+          <Route path="/conversations/:conversationId" element={<ConversationDetailPage />} />
+          <Route path="/conversations/:conversationId/:tab" element={<ConversationDetailPage />} />
+          <Route path="/people" element={<PeoplePage />} />
+          <Route path="/people/:profileId" element={<ProfileDetailPage />} />
+          <Route path="/people/:profileId/:tab" element={<ProfileDetailPage />} />
           <Route path="/test" element={<TestCenterPage />} />
           <Route path="/test/runs/:runId" element={<TestRunDetailPage />} />
           <Route path="/sessions" element={<SessionsPage />} />
@@ -244,13 +243,8 @@ export function AdminRoutes() {
           />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-                </AdminLayout>
-              </TestRunsProvider>
-            </AgentRegistryProvider>
-          </ToolRegistryProvider>
-        </KnowledgeRegistryProvider>
-      </IntegrationRegistryProvider>
+        </Routes>
+      </AdminLayout>
     </AdminRoute>
   );
 }

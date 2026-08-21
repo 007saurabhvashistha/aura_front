@@ -2,6 +2,7 @@ import type { ControlPlaneAgent } from '../../hooks/useAgentRegistry';
 import type { AgentBinding, IntegrationRecord } from '../../hooks/useIntegrationRegistry';
 import type { KnowledgeBase } from '../../hooks/useKnowledgeRegistry';
 import type { Tool } from '../../hooks/useToolRegistry';
+import type { CallSession, Conversation } from '../../hooks/useConversationRegistry';
 import type { TestRunResult } from '../testCenter';
 
 export type HealthLevel = 'healthy' | 'attention' | 'critical';
@@ -43,7 +44,7 @@ export interface DistributionSegment {
 }
 
 export interface OperationalHealthCard {
-  key: 'agents' | 'integrations' | 'knowledge' | 'tools';
+  key: 'agents' | 'integrations' | 'knowledge' | 'tools' | 'conversations';
   title: string;
   href: string;
   segments: DistributionSegment[];
@@ -53,7 +54,7 @@ export interface RecentActivityItem {
   id: string;
   message: string;
   resourceName: string;
-  resourceType: 'agent' | 'knowledge' | 'integration' | 'tool' | 'test';
+  resourceType: 'agent' | 'knowledge' | 'integration' | 'tool' | 'test' | 'companion' | 'profile' | 'conversation' | 'call';
   href: string;
   timestamp: string;
   isDemo: boolean;
@@ -104,6 +105,8 @@ export interface ControlPlaneOverviewInput {
   knowledgeBases: KnowledgeBase[];
   tools: Tool[];
   testRuns?: TestRunResult[];
+  conversations?: Conversation[];
+  calls?: CallSession[];
 }
 
 export interface ControlPlaneOverviewService {

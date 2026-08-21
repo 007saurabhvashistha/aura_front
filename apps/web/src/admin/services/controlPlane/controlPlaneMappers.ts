@@ -2,6 +2,7 @@ import type { ControlPlaneAgent } from '../../hooks/useAgentRegistry';
 import type { AgentBinding, IntegrationCapability, IntegrationRecord, IntegrationStatus } from '../../hooks/useIntegrationRegistry';
 import { getKnowledgeReadiness, type KnowledgeBase, type KnowledgeReadiness } from '../../hooks/useKnowledgeRegistry';
 import type { Tool } from '../../hooks/useToolRegistry';
+import type { CallSession, Conversation } from '../../hooks/useConversationRegistry';
 import { demoActivityService } from '../activity';
 import type { TestRunResult } from '../testCenter';
 import type {
@@ -291,9 +292,11 @@ export function deriveRecentActivity(
   integrations: IntegrationRecord[],
   tools: Tool[] = [],
   testRuns: TestRunResult[] = [],
+  conversations: Conversation[] = [],
+  calls: CallSession[] = [],
 ): RecentActivityItem[] {
   return demoActivityService
-    .getEvents({ agents, knowledgeBases, tools, integrations, testRuns }, { limit: 14 })
+    .getEvents({ agents, knowledgeBases, tools, integrations, testRuns, conversations, calls }, { limit: 14 })
     .map((event) => ({
       id: event.id,
       message: event.summary,

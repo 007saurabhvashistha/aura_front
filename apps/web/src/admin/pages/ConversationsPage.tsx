@@ -1,224 +1,391 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { PageHeader } from '../components/PageHeader';
+import { SectionToolbar } from '../components/SectionToolbar';
+import { Tabs } from '../components/Tabs';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { Drawer } from '../components/Drawer';
+import { EmptyState } from '../components/EmptyState';
+import { DemoNotice } from '../components/DemoNotice';
+import { EntityBadge } from '../components/EntityBadge';
+import { callStatusBadge, conversationStatusBadge } from '../components/statusMaps';
+import { useConversationRegistry } from '../hooks/useConversationRegistry';
+import { useSocialRegistry } from '../hooks/useSocialRegistry';
+import { useCompanionRegistry } from '../hooks/useCompanionRegistry';
+import { CHANNEL_LABELS, type InteractionChannel } from '../services/social';
 
-interface Conversation {
-  id: string;
-  userId: string;
-  userName: string;
-  topic: string;
-  status: 'active' | 'completed' | 'archived';
-  messages: number;
-  duration: string;
-  startedAt: string;
-  agent: string;
-}
+type InboxTab = 'all' | 'live' | 'history' | 'calls';
 
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: 'conv-1',
-    userId: 'user-123',
-    userName: 'Sarah Johnson',
-    topic: 'Product inquiry',
-    status: 'completed',
-    messages: 12,
-    duration: '8 minutes',
-    startedAt: '2 hours ago',
-    agent: 'Sales Assistant',
-  },
-  {
-    id: 'conv-2',
-    userId: 'user-456',
-    userName: 'Mike Chen',
-    topic: 'Technical support',
-    status: 'active',
-    messages: 5,
-    duration: '3 minutes',
-    startedAt: 'just now',
-    agent: 'Technical Troubleshooter',
-  },
-  {
-    id: 'conv-3',
-    userId: 'user-789',
-    userName: 'Emily Davis',
-    topic: 'Billing question',
-    status: 'completed',
-    messages: 8,
-    duration: '5 minutes',
-    startedAt: '1 hour ago',
-    agent: 'Customer Support Bot',
-  },
-  {
-    id: 'conv-4',
-    userId: 'user-101',
-    userName: 'Alex Kumar',
-    topic: 'Feature request',
-    status: 'archived',
-    messages: 15,
-    duration: '12 minutes',
-    startedAt: '3 days ago',
-    agent: 'Customer Support Bot',
-  },
-  {
-    id: 'conv-5',
-    userId: 'user-202',
-    userName: 'Jordan Smith',
-    topic: 'Account access',
-    status: 'active',
-    messages: 3,
-    duration: '2 minutes',
-    startedAt: '5 minutes ago',
-    agent: 'Customer Support Bot',
-  },
+const TYPE_FILTERS = [
+  { label: 'All participants', value: 'all' },
+  { label: 'AI characters', value: 'AI' },
+  { label: 'Real people', value: 'REAL_PERSON' },
 ];
 
-export function ConversationsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+const CHANNELS = Object.entries(CHANNEL_LABELS) as [InteractionChannel, string][];
 
-  const filteredConversations = useMemo(() => {
-    return MOCK_CONVERSATIONS.filter((conv) => {
+export function ConversationsPage({ initialTab = 'all' }: { initialTab?: InboxTab }) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { conversations, calls, mode, startConversation, advanceCall, endCall } = useConversationRegistry();
+  const { profiles } = useSocialRegistry();
+  const { channelAvailable } = useCompanionRegistry();
+
+  const [tab, setTab] = useState<InboxTab>(initialTab);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>(searchParams.get('type') ?? 'all');
+  const [channelFilter, setChannelFilter] = useState<'all' | InteractionChannel>('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [newProfileId, setNewProfileId] = useState('');
+  const [newChannel, setNewChannel] = useState<InteractionChannel>('chat');
+  const [newTopic, setNewTopic] = useState('');
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return conversations.filter((conversation) => {
       const matchesSearch =
-        conv.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.userName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
-      return matchesSearch && matchesStatus;
+        !query ||
+        conversation.participantName.toLowerCase().includes(query) ||
+        conversation.participantHandle.toLowerCase().includes(query) ||
+        conversation.topic.toLowerCase().includes(query);
+      const matchesType = typeFilter === 'all' || conversation.entityType === typeFilter;
+      const matchesChannel = channelFilter === 'all' || conversation.channel === channelFilter;
+      const matchesTab =
+        tab === 'all' || tab === 'calls'
+          ? true
+          : tab === 'live'
+            ? conversation.status === 'live'
+            : conversation.status !== 'live';
+      return matchesSearch && matchesType && matchesChannel && matchesTab;
     });
-  }, [searchTerm, statusFilter]);
+  }, [conversations, search, typeFilter, channelFilter, tab]);
 
-  const getStatusColor = (status: Conversation['status']) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'completed':
-        return 'info';
-      case 'archived':
-        return 'warning';
-      default:
-        return 'info';
-    }
+  const filteredCalls = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return calls.filter((call) => !query || call.participantName.toLowerCase().includes(query));
+  }, [calls, search]);
+
+  const liveCount = conversations.filter((conversation) => conversation.status === 'live').length;
+  const aiCount = conversations.filter((conversation) => conversation.entityType === 'AI').length;
+  const peopleCount = conversations.filter((conversation) => conversation.entityType === 'REAL_PERSON').length;
+  const activeCalls = calls.filter(
+    (call) => call.status === 'ringing' || call.status === 'connecting' || call.status === 'active',
+  ).length;
+
+  const handleCreate = async () => {
+    if (!newProfileId) return;
+    if (!channelAvailable(newProfileId, newChannel)) return;
+    const created = await startConversation({ profileId: newProfileId, channel: newChannel, topic: newTopic });
+    setDrawerOpen(false);
+    setNewProfileId('');
+    setNewTopic('');
+    setNewChannel('chat');
+    if (created) navigate(`/admin/conversations/${created.id}`);
   };
 
+  const selectedProfile = profiles.find((profile) => profile.id === newProfileId) ?? null;
+  const availableChannels = selectedProfile
+    ? CHANNELS.filter(([value]) => channelAvailable(selectedProfile.id, value))
+    : CHANNELS;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-admin-text-primary mb-2">
-            Conversations
-          </h1>
-          <p className="text-secondary">View and manage user conversations</p>
-        </div>
-        <Button variant="primary">
-          + Export Transcript
-        </Button>
-      </div>
+    <div className="admin-page">
+      <PageHeader
+        title="Conversations"
+        description="One inbox for AI characters and real people. Every conversation states which one it is."
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Conversations' }]}
+        actions={[
+          { label: '+ New Conversation', variant: 'primary', onClick: () => setDrawerOpen(true) },
+          { label: 'People', variant: 'secondary', href: '/admin/people' },
+        ]}
+      />
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card variant="metric">
-          <p className="text-sm font-medium text-secondary">Total Conversations</p>
-          <p className="text-3xl font-bold text-admin-text-primary mt-2">
-            {MOCK_CONVERSATIONS.length}
-          </p>
-          <p className="text-xs text-teal-600 font-medium mt-2">All time</p>
-        </Card>
-        <Card variant="metric">
-          <p className="text-sm font-medium text-secondary">Active Now</p>
-          <p className="text-3xl font-bold text-admin-text-primary mt-2">
-            {MOCK_CONVERSATIONS.filter((c) => c.status === 'active').length}
-          </p>
-          <p className="text-xs text-green-600 font-medium mt-2">In progress</p>
-        </Card>
-        <Card variant="metric">
-          <p className="text-sm font-medium text-secondary">Avg. Duration</p>
-          <p className="text-3xl font-bold text-admin-text-primary mt-2">7.6m</p>
-          <p className="text-xs text-blue-600 font-medium mt-2">Per conversation</p>
-        </Card>
-        <Card variant="metric">
-          <p className="text-sm font-medium text-secondary">Satisfaction</p>
-          <p className="text-3xl font-bold text-admin-text-primary mt-2">4.8/5</p>
-          <p className="text-xs text-amber-600 font-medium mt-2">Average rating</p>
-        </Card>
-      </div>
+      <DemoNotice
+        message={
+          mode === 'SIMULATED'
+            ? 'DEMO / SIMULATED: Conversations, AI replies, and calls run on in-memory state. AI replies are traced through real registry readiness, never randomised.'
+            : 'REAL / CONNECTED: Conversations are served by the backend.'
+        }
+      />
 
-      {/* Filters */}
-      <Card>
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search conversations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-admin-border rounded-lg bg-admin-bg-primary text-admin-text-primary"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="archived">Archived</option>
-            </select>
+      <section className="se-stat-grid">
+        <Card variant="metric">
+          <p className="cp-kpi-label">Live now</p>
+          <p className="cp-kpi-value">{liveCount}</p>
+          <p className="cp-kpi-note">{conversations.length} conversations total</p>
+        </Card>
+        <Card variant="metric">
+          <p className="cp-kpi-label">AI characters</p>
+          <p className="cp-kpi-value">{aiCount}</p>
+          <p className="cp-kpi-note">Backed by agents</p>
+        </Card>
+        <Card variant="metric">
+          <p className="cp-kpi-label">Real people</p>
+          <p className="cp-kpi-value">{peopleCount}</p>
+          <p className="cp-kpi-note">Human-to-human</p>
+        </Card>
+        <Card variant="metric">
+          <p className="cp-kpi-label">Active calls</p>
+          <p className="cp-kpi-value">{activeCalls}</p>
+          <p className="cp-kpi-note">{calls.length} call sessions logged</p>
+        </Card>
+      </section>
+
+      <Tabs
+        tabs={[
+          { label: 'All', value: 'all', count: conversations.length },
+          { label: 'Live', value: 'live', count: liveCount },
+          { label: 'History', value: 'history', count: conversations.length - liveCount },
+          { label: 'Calls', value: 'calls', count: calls.length },
+        ]}
+        active={tab}
+        onChange={(value) => setTab(value as InboxTab)}
+      />
+
+      <SectionToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by participant or topic"
+        filters={tab === 'calls' ? undefined : TYPE_FILTERS}
+        activeFilter={typeFilter}
+        onFilterChange={setTypeFilter}
+        actions={
+          tab === 'calls' ? undefined : (
+            <label className="admin-field">
+              <select
+                className="admin-select"
+                value={channelFilter}
+                onChange={(e) => setChannelFilter(e.target.value as 'all' | InteractionChannel)}
+              >
+                <option value="all">All channels</option>
+                {CHANNELS.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </label>
+          )
+        }
+      />
+
+      {tab === 'calls' ? (
+        filteredCalls.length === 0 ? (
+          <EmptyState
+            title="No calls yet"
+            description="Open a real-person conversation and start a video call to see the call lifecycle here."
+          />
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Participant</th>
+                  <th>Kind</th>
+                  <th>Status</th>
+                  <th>Started</th>
+                  <th>Ended</th>
+                  <th aria-label="Actions" />
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCalls.map((call) => {
+                  const status = callStatusBadge(call.status);
+                  const terminal = call.status === 'ended' || call.status === 'failed' || call.status === 'declined';
+                  return (
+                    <tr key={call.id}>
+                      <td>
+                        <div className="se-identity">
+                          <span className="admin-cell-title">{call.participantName}</span>
+                          <EntityBadge type={call.entityType} compact />
+                        </div>
+                      </td>
+                      <td className="admin-cell-sub">{call.kind}</td>
+                      <td><Badge variant={status.variant}>{status.label}</Badge></td>
+                      <td className="admin-cell-sub">{call.startedAt}</td>
+                      <td className="admin-cell-sub">{call.endedAt ?? '—'}</td>
+                      <td>
+                        <div className="admin-row-actions">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => navigate(`/admin/conversations/${call.conversationId}/calls`)}
+                          >
+                            Open
+                          </Button>
+                          {!terminal && (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => advanceCall(call.id)}>
+                                Advance
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => endCall(call.id)}>
+                                End
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </Card>
-
-      {/* Conversations Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="admin-table w-full">
+        )
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title={conversations.length === 0 ? 'No conversations yet' : 'No matches'}
+          description={
+            conversations.length === 0
+              ? 'Start a conversation with an AI character or a real person.'
+              : 'Try a different search term or filter.'
+          }
+          action={
+            <Button variant="primary" onClick={() => setDrawerOpen(true)}>
+              New Conversation
+            </Button>
+          }
+        />
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
             <thead>
               <tr>
-                <th>User</th>
+                <th>Participant</th>
                 <th>Topic</th>
-                <th>Agent</th>
+                <th>Channel</th>
                 <th>Status</th>
+                <th>Last reply</th>
                 <th>Messages</th>
-                <th>Duration</th>
-                <th>Started</th>
-                <th>Actions</th>
+                <th>Last activity</th>
+                <th aria-label="Actions" />
               </tr>
             </thead>
             <tbody>
-              {filteredConversations.map((conv) => (
-                <tr key={conv.id}>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full flex items-center justify-center text-sm font-semibold text-primary-700">
-                        {conv.userName.charAt(0)}
+              {filtered.map((conversation) => {
+                const status = conversationStatusBadge(conversation.status);
+                return (
+                  <tr key={conversation.id}>
+                    <td>
+                      <div className="se-identity">
+                        <button
+                          type="button"
+                          className="admin-link-cell"
+                          onClick={() => navigate(`/admin/conversations/${conversation.id}`)}
+                        >
+                          {conversation.participantName}
+                        </button>
+                        <EntityBadge type={conversation.entityType} compact />
                       </div>
-                      <span className="font-medium text-admin-text-primary">
-                        {conv.userName}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="text-admin-text-primary font-medium">{conv.topic}</td>
-                  <td className="text-secondary text-sm">{conv.agent}</td>
-                  <td>
-                    <Badge variant={getStatusColor(conv.status)}>
-                      {conv.status.charAt(0).toUpperCase() + conv.status.slice(1)}
-                    </Badge>
-                  </td>
-                  <td className="text-secondary text-sm">{conv.messages}</td>
-                  <td className="text-secondary text-sm">{conv.duration}</td>
-                  <td className="text-secondary text-sm">{conv.startedAt}</td>
-                  <td>
-                    <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <p className="admin-cell-sub">
+                        {conversation.participantHandle}
+                        {conversation.entityType === 'AI' && conversation.agentId
+                          ? ` · agent ${conversation.agentId}`
+                          : ''}
+                      </p>
+                    </td>
+                    <td className="admin-cell-sub">{conversation.topic}</td>
+                    <td className="admin-cell-sub">{CHANNEL_LABELS[conversation.channel]}</td>
+                    <td><Badge variant={status.variant}>{status.label}</Badge></td>
+                    <td>
+                      {conversation.lastTurnStatus === null ? (
+                        <span className="admin-cell-sub">—</span>
+                      ) : (
+                        <Badge variant={conversation.lastTurnStatus === 'passed' ? 'success' : 'danger'}>
+                          {conversation.lastTurnStatus === 'passed' ? 'Delivered' : 'Failed'}
+                        </Badge>
+                      )}
+                    </td>
+                    <td className="admin-cell-sub">{conversation.messages.length}</td>
+                    <td className="admin-cell-sub">{conversation.lastActivityAt}</td>
+                    <td>
+                      <div className="admin-row-actions">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => navigate(`/admin/conversations/${conversation.id}`)}
+                        >
+                          Open
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </Card>
+      )}
+
+      <Drawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title="New Conversation"
+        description="Pick a participant. AI characters reply through their agent; real people reply as humans."
+        footer={
+          <div className="admin-drawer-actions">
+            <Button variant="ghost" onClick={() => setDrawerOpen(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleCreate} disabled={!newProfileId}>
+              Start
+            </Button>
+          </div>
+        }
+      >
+        <div className="admin-form">
+          <label className="admin-field">
+            <span className="admin-field-label">Participant</span>
+            <select className="admin-select" value={newProfileId} onChange={(e) => setNewProfileId(e.target.value)}>
+              <option value="">Select a participant</option>
+              <optgroup label="AI characters">
+                {profiles
+                  .filter((profile) => profile.type === 'AI')
+                  .map((profile) => (
+                    <option key={profile.id} value={profile.id}>{profile.displayName} (AI)</option>
+                  ))}
+              </optgroup>
+              <optgroup label="Real people">
+                {profiles
+                  .filter((profile) => profile.type === 'REAL_PERSON')
+                  .map((profile) => (
+                    <option key={profile.id} value={profile.id}>{profile.displayName} (Real person)</option>
+                  ))}
+              </optgroup>
+            </select>
+          </label>
+
+          {selectedProfile && (
+            <div className="se-identity">
+              <EntityBadge type={selectedProfile.type} />
+              <span className="admin-cell-sub">
+                {selectedProfile.type === 'AI'
+                  ? 'Replies are generated by an AI agent.'
+                  : 'Replies come from a real person. Video calls are available.'}
+              </span>
+            </div>
+          )}
+
+          <label className="admin-field">
+            <span className="admin-field-label">Channel</span>
+            <select
+              className="admin-select"
+              value={newChannel}
+              onChange={(e) => setNewChannel(e.target.value as InteractionChannel)}
+            >
+              {availableChannels.map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+
+          <Input
+            label="Topic"
+            placeholder="e.g. Evening check-in"
+            value={newTopic}
+            onChange={(e) => setNewTopic(e.target.value)}
+          />
+        </div>
+      </Drawer>
     </div>
   );
 }

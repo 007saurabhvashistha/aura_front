@@ -31,6 +31,7 @@ const NAV_SECTIONS: SidebarSection[] = [
     title: 'Operate',
     links: [
       { label: 'Conversations', href: '/admin/conversations' },
+      { label: 'People', href: '/admin/people' },
       { label: 'Test Center', href: '/admin/test' },
     ],
   },
@@ -154,6 +155,11 @@ function NavIcon({ label }: { label: string }) {
     Team: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-1a4 4 0 00-4-4h-1m-4 5H2v-1a4 4 0 014-4h4a4 4 0 014 4v1zm-6-9a3 3 0 100-6 3 3 0 000 6zm9 0a3 3 0 100-6 3 3 0 000 6z" />
+      </svg>
+    ),
+    People: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 20h6v-1a3 3 0 00-3-3h-1m-5 4H3v-1a4 4 0 014-4h3a4 4 0 014 4v1zm-5.5-9a3 3 0 100-6 3 3 0 000 6zm8 1a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
       </svg>
     ),
     'Roles & Permissions': (

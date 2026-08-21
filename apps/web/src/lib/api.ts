@@ -106,6 +106,58 @@ export async function apiRequest<T>(
 }
 
 /** Fetch the backend health status (public endpoint). */
+/**
+ * Subscribes to a server-sent-event endpoint. EventSource cannot carry the bearer
+ * token, so this reads the stream over fetch. Returns an unsubscribe function.
+ */
+export function subscribeToEvents(
+  path: string,
+  onEvent: (event: string, data: unknown) => void,
+): () => void {
+  const controller = new AbortController();
+
+  void (async () => {
+    try {
+      const headers: Record<string, string> = { accept: 'text/event-stream' };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers,
+        credentials: 'include',
+        signal: controller.signal,
+      });
+      if (!res.ok || !res.body) return;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() ?? '';
+        for (const frame of frames) {
+          const event = /^event: (.*)$/m.exec(frame)?.[1];
+          const raw = /^data: (.*)$/m.exec(frame)?.[1];
+          if (!event) continue;
+          try {
+            onEvent(event, raw ? JSON.parse(raw) : null);
+          } catch {
+            // A malformed frame must not tear down the subscription.
+          }
+        }
+      }
+    } catch {
+      // Aborts and dropped connections are expected; persistence stays authoritative.
+    }
+  })();
+
+  return () => controller.abort();
+}
+
 export async function fetchHealth(): Promise<HealthStatus> {
   const res = await fetch(`${API_BASE_URL}/health`);
   if (!res.ok) {

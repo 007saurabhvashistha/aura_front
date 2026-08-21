@@ -1,6 +1,8 @@
 import type { ProcessingStatus, KnowledgeReadiness, SourceStatus } from '../hooks/useKnowledgeRegistry';
 import type { ToolReadiness, ToolTestState, ToolValidationState } from '../hooks/useToolRegistry';
+import type { PresenceStatus } from '../hooks/useSocialRegistry';
 import type { AgentLifecycleStatus } from '../data/demoAgents';
+import { CALL_STATUS_LABELS, type CallStatus, type ConversationStatus } from '../services/social';
 
 type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'teal';
 
@@ -104,5 +106,46 @@ export function agentStatusBadge(status: AgentLifecycleStatus): StatusDescriptor
     case 'draft':
     default:
       return { label: 'Draft', variant: 'default' };
+  }
+}
+
+export function conversationStatusBadge(status: ConversationStatus): StatusDescriptor {
+  switch (status) {
+    case 'live':
+      return { label: 'Live', variant: 'success' };
+    case 'ended':
+      return { label: 'Ended', variant: 'default' };
+    case 'archived':
+    default:
+      return { label: 'Archived', variant: 'warning' };
+  }
+}
+
+export function callStatusBadge(status: CallStatus): StatusDescriptor {
+  switch (status) {
+    case 'active':
+      return { label: CALL_STATUS_LABELS.active, variant: 'success' };
+    case 'ringing':
+    case 'connecting':
+    case 'requested':
+      return { label: CALL_STATUS_LABELS[status], variant: 'info' };
+    case 'failed':
+    case 'declined':
+      return { label: CALL_STATUS_LABELS[status], variant: 'danger' };
+    case 'ended':
+    default:
+      return { label: CALL_STATUS_LABELS.ended, variant: 'default' };
+  }
+}
+
+export function presenceBadge(presence: PresenceStatus): StatusDescriptor {
+  switch (presence) {
+    case 'online':
+      return { label: 'Online', variant: 'success' };
+    case 'away':
+      return { label: 'Away', variant: 'warning' };
+    case 'offline':
+    default:
+      return { label: 'Offline', variant: 'default' };
   }
 }

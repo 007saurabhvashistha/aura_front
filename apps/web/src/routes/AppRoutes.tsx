@@ -10,6 +10,8 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { ConversationPage } from '../pages/ConversationPage';
 import { AdminRoutes } from '../admin/routes/AdminRoutes';
 import { StudioRoutes } from '../studio/routes/StudioRoutes';
+import { AuraAppRoutes } from '../app/routes/AuraAppRoutes';
+import { PlatformProviders } from '../providers/PlatformProviders';
 
 /** Redirect authenticated users away from public auth pages. */
 function PublicOnly({ children }: { children: React.ReactNode }) {
@@ -20,7 +22,8 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 
 export function AppRoutes() {
   return (
-    <Routes>
+    <PlatformProviders>
+      <Routes>
       <Route
         path="/login"
         element={
@@ -69,9 +72,18 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/app/*"
+        element={
+          <ProtectedRoute>
+            <AuraAppRoutes />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/admin/*" element={<AdminRoutes />} />
       <Route path="/studio/*" element={<StudioRoutes />} />
       <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+      </Routes>
+    </PlatformProviders>
   );
 }

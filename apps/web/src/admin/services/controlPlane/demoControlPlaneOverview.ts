@@ -30,6 +30,7 @@ function buildOperationalHealth(input: ControlPlaneOverviewInput): OperationalHe
   const integrationSegments = deriveIntegrationStatusSegments(input.integrations);
   const knowledgeSegments = deriveKnowledgeStatusSegments(input.knowledgeBases);
   const toolSegments = deriveToolStatusSegments(input.tools);
+  const conversations = input.conversations ?? [];
 
   return [
     {
@@ -55,6 +56,23 @@ function buildOperationalHealth(input: ControlPlaneOverviewInput): OperationalHe
       title: 'Tools',
       href: '/admin/tools',
       segments: toolSegments,
+    },
+    {
+      key: 'conversations',
+      title: 'Conversations by participant',
+      href: '/admin/conversations',
+      segments: [
+        {
+          key: 'ai',
+          label: 'AI characters',
+          count: conversations.filter((conversation) => conversation.entityType === 'AI').length,
+        },
+        {
+          key: 'real',
+          label: 'Real people',
+          count: conversations.filter((conversation) => conversation.entityType === 'REAL_PERSON').length,
+        },
+      ],
     },
   ];
 }
@@ -110,32 +128,53 @@ function buildMetrics(input: ControlPlaneOverviewInput, attentionTotal: number):
   ];
 }
 
+// Every value below is DERIVED from in-memory social state (no invented
+// numbers). They stay flagged as demo until backend telemetry is connected.
 function buildSimulatedMetrics(input: ControlPlaneOverviewInput): ControlPlaneMetric[] {
-  const base = input.agents.length * 14 + input.tools.length * 3;
+  const conversations = input.conversations ?? [];
+  const calls = input.calls ?? [];
+
+  const live = conversations.filter((conversation) => conversation.status === 'live');
+  const aiConversations = conversations.filter((conversation) => conversation.entityType === 'AI');
+  const peopleConversations = conversations.filter((conversation) => conversation.entityType === 'REAL_PERSON');
+  const failingTurns = conversations.filter((conversation) => conversation.lastTurnStatus === 'failed');
+  const activeCalls = calls.filter(
+    (call) => call.status === 'ringing' || call.status === 'connecting' || call.status === 'active',
+  );
+  const failedCalls = calls.filter((call) => call.status === 'failed');
+
   return [
     {
-      id: 'sim-conversations-today',
-      label: "Today's conversations",
-      value: String(base),
-      note: 'Demo metric from frontend adapter',
-      isDemo: true,
-      href: '/admin/conversations/history',
-    },
-    {
-      id: 'sim-active-conversations',
-      label: 'Active conversations',
-      value: String(Math.max(1, Math.floor(base / 12))),
-      note: 'Demo metric from frontend adapter',
+      id: 'social-live-conversations',
+      label: 'Live conversations',
+      value: String(live.length),
+      note: `${conversations.length} total in the inbox`,
       isDemo: true,
       href: '/admin/conversations/live',
     },
     {
-      id: 'sim-estimated-cost',
-      label: 'Usage / cost snapshot',
-      value: `$${(base * 0.18).toFixed(2)}`,
-      note: 'Demo estimate for control-plane UX',
+      id: 'social-participant-split',
+      label: 'AI vs real people',
+      value: `${aiConversations.length} / ${peopleConversations.length}`,
+      note: 'AI character conversations vs real-person conversations',
       isDemo: true,
-      href: '/admin/analytics',
+      href: '/admin/conversations',
+    },
+    {
+      id: 'social-active-calls',
+      label: 'Active calls',
+      value: String(activeCalls.length),
+      note: failedCalls.length > 0 ? `${failedCalls.length} failed call(s)` : 'Real-person calls in progress',
+      isDemo: true,
+      href: '/admin/conversations/calls',
+    },
+    {
+      id: 'social-failed-turns',
+      label: 'Failing AI replies',
+      value: String(failingTurns.length),
+      note: failingTurns.length === 0 ? 'All AI turns completed' : 'Conversations whose last AI turn failed',
+      isDemo: true,
+      href: '/admin/conversations?type=AI',
     },
   ];
 }
@@ -221,6 +260,8 @@ export function createDemoControlPlaneOverview(input: ControlPlaneOverviewInput)
       input.integrations,
       input.tools,
       input.testRuns ?? [],
+      input.conversations ?? [],
+      input.calls ?? [],
     ),
     agentSummary: deriveAgentSummaryRows(
       input.agents,
