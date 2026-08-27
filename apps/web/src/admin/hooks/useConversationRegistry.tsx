@@ -58,7 +58,7 @@ export interface ConversationMessage {
   entityType: EntityType | null;
   text: string;
   timestamp: string;
-  status: 'sent' | 'failed';
+  status: 'sent' | 'failed' | 'pending';
 }
 
 export interface CallEvent {
@@ -410,6 +410,27 @@ export function ConversationRegistryProvider({ children }: { children: ReactNode
       // The backend owns the companion turn (character -> memory + relationship -> gateway),
       // so REAL mode never generates a reply on the client.
       if (socialMode === 'REAL') {
+        const outgoing = seedMessage(uid('msg'), 'operator', ACTOR, null, text.trim(), nowStamp());
+        const pending: ConversationMessage = {
+          id: uid('msg-pending'),
+          author: 'system',
+          authorName: 'Aura',
+          entityType: null,
+          text: 'Thinking...',
+          timestamp: nowStamp(),
+          status: 'pending',
+        };
+
+        patchConversation(conversationId, (item) => ({
+          ...item,
+          status: item.status === 'archived' ? item.status : 'live',
+          messages: [...item.messages, outgoing, pending],
+          lastActivityAt: nowStamp(),
+          lastTurnStatus: null,
+          errors: [],
+          activity: [makeActivity('message_sent', `Message sent to ${item.participantName}.`), ...item.activity],
+        }));
+
         void apiConversationDataService
           .sendMessage(conversationId, text.trim())
           .then(replaceConversation)
@@ -418,6 +439,11 @@ export function ConversationRegistryProvider({ children }: { children: ReactNode
               ...item,
               lastTurnStatus: 'failed',
               errors: ['Message could not be persisted.'],
+              messages: item.messages.map((message) =>
+                message.id === pending.id
+                  ? { ...message, text: 'Message could not be delivered.', status: 'failed' }
+                  : message,
+              ),
               activity: [makeActivity('ai_turn_failed', 'Message could not be persisted.'), ...item.activity],
             }));
           });

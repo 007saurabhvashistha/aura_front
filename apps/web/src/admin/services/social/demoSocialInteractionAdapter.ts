@@ -104,11 +104,12 @@ export class SimulatedSocialInteractionAdapter implements SocialInteractionServi
           detail: ok
             ? `Grounded on ${kb.sources.filter((source) => source.status === 'indexed').length} indexed source(s).`
             : knowledgeReadinessReason(readiness),
-          status: ok ? 'passed' : 'skipped',
+          status: ok ? 'passed' : 'failed',
           latencyMs: latencyFor(kb.id, 90),
           resourceType: 'knowledge',
           resourceId: kb.id,
           href: `/admin/knowledge/${kb.id}`,
+          error: ok ? undefined : `Knowledge base "${kb.name}" is not ready.`,
         });
       });
     }
@@ -122,11 +123,12 @@ export class SimulatedSocialInteractionAdapter implements SocialInteractionServi
         stage: 'tool',
         label: `Tool ${tool.name}`,
         detail: ok ? 'Available for this turn.' : toolReadinessReason(readiness),
-        status: ok ? 'passed' : 'skipped',
+        status: ok ? 'passed' : 'failed',
         latencyMs: latencyFor(tool.id, 110),
         resourceType: 'tool',
         resourceId: tool.id,
         href: `/admin/tools/${tool.id}`,
+        error: ok ? undefined : `Tool "${tool.name}" is not ready.`,
       });
     });
 
@@ -204,7 +206,7 @@ export class SimulatedSocialInteractionAdapter implements SocialInteractionServi
         id: 'social-step-transport',
         stage: 'transport',
         label: 'Message delivery',
-        detail: `Delivered to ${participantName}. This is real-person transport only; no AI model is involved.`,
+        detail: `Delivered to ${participantName}. No AI model or LLM Gateway is involved in this conversation.`,
         status: 'passed',
         latencyMs: latencyFor(participantName, 30),
       },

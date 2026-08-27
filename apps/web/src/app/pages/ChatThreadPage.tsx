@@ -19,6 +19,7 @@ export function ChatThreadPage() {
 
   const conversation = getConversationById(conversationId);
   const profile = conversation ? profiles.find((item) => item.id === conversation.profileId) ?? null : null;
+  const isSending = Boolean(conversation?.messages.some((message) => message.status === 'pending'));
   const liveCall = getCallsForConversation(conversationId).find(
     (call) => call.status !== 'ended' && call.status !== 'failed' && call.status !== 'declined',
   );
@@ -57,7 +58,7 @@ export function ChatThreadPage() {
   }
 
   const submit = () => {
-    if (!draft.trim()) return;
+    if (!draft.trim() || isSending) return;
     sendMessage(conversation.id, draft.trim());
     setDraft('');
   };
@@ -103,6 +104,13 @@ export function ChatThreadPage() {
         <div className="aa-thread">
           {conversation.messages.map((message) => {
             if (message.author === 'system') {
+              if (message.status === 'pending') {
+                return (
+                  <div key={message.id} className="aa-msg is-system">
+                    Thinking...
+                  </div>
+                );
+              }
               // The underlying dependency error stays in Admin; users see a neutral state.
               return (
                 <div key={message.id} className="aa-msg is-system">
@@ -141,9 +149,10 @@ export function ChatThreadPage() {
             if (event.key === 'Enter') submit();
           }}
           aria-label="Message"
+          disabled={isSending}
         />
-        <button type="button" className="aa-btn is-primary" onClick={submit} disabled={!draft.trim()}>
-          Send
+        <button type="button" className="aa-btn is-primary" onClick={submit} disabled={!draft.trim() || isSending}>
+          {isSending ? 'Sending' : 'Send'}
         </button>
       </div>
     </>
