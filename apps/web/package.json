@@ -6,6 +6,7 @@
   "description": "Aura frontend — React + Vite + TypeScript.",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run build --workspace @aura/shared",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
