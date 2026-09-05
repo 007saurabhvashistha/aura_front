@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ArrowLeft, Camera, Grid3X3, MessageCircle, MoreHorizontal, Plus, Settings, Video } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useSocialRegistry, type ProfileVisibility } from '../../admin/hooks/useSocialRegistry';
 import { useConversationRegistry } from '../../admin/hooks/useConversationRegistry';
@@ -81,14 +82,14 @@ export function ProfileViewPage({ self = false }: { self?: boolean }) {
         back={
           self ? undefined : (
             <button type="button" className="aa-btn is-sm is-ghost" onClick={() => navigate(-1)}>
-              ←
+              <ArrowLeft size={17} />
             </button>
           )
         }
         actions={
           isSelf ? (
             <Link className="aa-btn is-sm is-ghost" to="/app/settings" aria-label="Settings">
-              ⚙
+              <Settings size={17} />
             </Link>
           ) : (
             <button
@@ -97,7 +98,7 @@ export function ProfileViewPage({ self = false }: { self?: boolean }) {
               aria-label={`More options for ${profile.displayName}`}
               onClick={() => setShowSafety(true)}
             >
-              ⋯
+              <MoreHorizontal size={18} />
             </button>
           )
         }
@@ -146,20 +147,24 @@ export function ProfileViewPage({ self = false }: { self?: boolean }) {
           {isSelf ? (
             <>
               <button type="button" className="aa-btn is-primary" onClick={() => setComposer('story')} disabled={!canStory}>
+                <Camera size={17} />
                 Add story
               </button>
               <button type="button" className="aa-btn" onClick={() => setComposer('post')} disabled={!canPost}>
+                <Plus size={17} />
                 New post
               </button>
             </>
           ) : (
             <>
               <button type="button" className="aa-btn is-primary" onClick={() => openConversation(profile)} disabled={!canMessage}>
+                <MessageCircle size={17} />
                 Message
               </button>
               {canFollow ? <FollowButton profile={profile} size="md" /> : null}
               {canVideo ? (
                 <button type="button" className="aa-btn" onClick={startVideoCall}>
+                  <Video size={17} />
                   Video call
                 </button>
               ) : null}
@@ -202,7 +207,9 @@ export function ProfileViewPage({ self = false }: { self?: boolean }) {
 
         <section style={{ paddingBottom: 16 }}>
           <h2 className="aa-section-title" style={{ padding: '0 16px' }}>
-            Posts
+            <span>
+              <Grid3X3 size={14} /> Posts
+            </span>
           </h2>
           {profile.posts.length === 0 ? (
             <p className="aa-empty" style={{ margin: '0 16px' }}>

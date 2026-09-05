@@ -919,3 +919,654 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Premium social polish */
+.aura-app {
+  --aa-bg: #09090b;
+  --aa-surface: #141316;
+  --aa-surface-2: #201d21;
+  --aa-line: rgba(255, 255, 255, 0.11);
+  --aa-text: #fbf7f2;
+  --aa-muted: #a9a09a;
+  --aa-ai: #48d6c9;
+  --aa-real: #9db7ff;
+  --aa-accent: #ff4f7b;
+  --aa-accent-2: #ffb36b;
+  --aa-gold: #f6d47b;
+  background:
+    linear-gradient(120deg, rgba(255, 79, 123, 0.12), transparent 34%),
+    linear-gradient(240deg, rgba(72, 214, 201, 0.14), transparent 36%),
+    #050507;
+  font-family: 'Satoshi', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.aura-app .aa-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 220px),
+    var(--aa-bg);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+}
+
+.aura-app .aa-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 16px 16px 12px;
+  background: rgba(9, 9, 11, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.aura-app .aa-topbar h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--aa-text);
+  -webkit-text-fill-color: var(--aa-text);
+}
+
+.aura-app .aa-topbar-sub {
+  color: rgba(251, 247, 242, 0.62);
+}
+
+.aura-app .aa-nav {
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(9, 9, 11, 0.82);
+  backdrop-filter: blur(18px);
+}
+
+.aura-app .aa-nav a {
+  gap: 5px;
+  padding: 10px 0 12px;
+}
+
+.aura-app .aa-nav-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aura-app .aa-nav a.is-active .aa-nav-icon {
+  color: var(--aa-accent-2);
+}
+
+.aura-app .aa-nav-dot,
+.aura-app .aa-conv-unread {
+  background: linear-gradient(135deg, var(--aa-accent), var(--aa-accent-2));
+}
+
+.aura-app .aa-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.aura-app .aa-btn.is-primary {
+  background: linear-gradient(135deg, var(--aa-accent), var(--aa-accent-2));
+  color: #fff;
+}
+
+.aura-app .aa-btn.is-ghost {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.aura-app .aa-input,
+.aura-app .aa-textarea,
+.aura-app .aa-select {
+  border-color: rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.aura-app .aa-input:focus,
+.aura-app .aa-textarea:focus,
+.aura-app .aa-select:focus {
+  outline: 2px solid rgba(255, 79, 123, 0.38);
+}
+
+.aura-app .aa-chip {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.aura-app .aa-chip.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--aa-text);
+}
+
+.aura-app .aa-avatar {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #ff4f7b, #ffb36b 52%, #48d6c9);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18), 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.aura-app .aa-avatar.is-lg {
+  width: 84px;
+  height: 84px;
+}
+
+.aura-app .aa-rail {
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.aura-app .aa-rail-ring {
+  padding: 3px;
+  background: conic-gradient(from 210deg, #f6d47b, #ff4f7b, #7f7cff, #48d6c9, #f6d47b);
+  box-shadow: 0 10px 26px rgba(255, 79, 123, 0.15);
+}
+
+.aura-app .aa-discover-hero {
+  margin: 14px 14px 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 79, 123, 0.22), transparent 46%),
+    linear-gradient(315deg, rgba(72, 214, 201, 0.2), transparent 44%),
+    rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.aura-app .aa-hero-copy h2 {
+  max-width: 390px;
+  margin: 8px 0 14px;
+  font-size: 28px;
+  line-height: 1.03;
+  letter-spacing: 0;
+  color: var(--aa-text);
+  -webkit-text-fill-color: var(--aa-text);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.34);
+}
+
+.aura-app .aa-kicker,
+.aura-app .aa-hero-stats {
+  display: flex;
+  align-items: center;
+}
+
+.aura-app .aa-kicker {
+  gap: 6px;
+  color: var(--aa-gold);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.aura-app .aa-hero-stats {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.aura-app .aa-hero-stats span {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(5, 5, 7, 0.32);
+  color: var(--aa-muted);
+  font-size: 11px;
+}
+
+.aura-app .aa-hero-stats b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--aa-text);
+  font-size: 18px;
+}
+
+.aura-app .aa-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 14px 12px;
+  padding: 0 12px;
+  border: 1px solid var(--aa-line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--aa-muted);
+}
+
+.aura-app .aa-search-wrap .aa-input {
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+}
+
+.aura-app .aa-search-wrap .aa-input:focus {
+  outline: 0;
+}
+
+.aura-app .aa-section-title {
+  color: rgba(251, 247, 242, 0.68);
+}
+
+.aura-app .aa-section-title span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aura-app .aa-people {
+  gap: 12px;
+}
+
+.aura-app .aa-person {
+  min-height: 220px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 78px),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.aura-app .aa-person-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aura-app .aa-person-actions {
+  margin-top: auto;
+}
+
+.aura-app .aa-post {
+  margin: 0 14px 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.aura-app .aa-post-media,
+.aura-app .aa-grid-tile,
+.aura-app .aa-story-body,
+.aura-app .aa-call-stage {
+  background:
+    linear-gradient(135deg, rgba(255, 79, 123, 0.26), transparent 45%),
+    linear-gradient(315deg, rgba(72, 214, 201, 0.22), transparent 48%),
+    #171316;
+}
+
+.aura-app .aa-post-media {
+  height: clamp(260px, 66vw, 380px);
+  border-radius: 22px;
+  color: rgba(251, 247, 242, 0.7);
+}
+
+.aura-app .aa-post-actions {
+  display: flex;
+  gap: 14px;
+  margin: 10px 0 8px;
+}
+
+.aura-app .aa-post-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--aa-text);
+  cursor: pointer;
+}
+
+.aura-app .aa-grid {
+  gap: 5px;
+}
+
+.aura-app .aa-grid-tile {
+  border-radius: 14px;
+  color: rgba(251, 247, 242, 0.78);
+}
+
+.aura-app .aa-profile-head {
+  margin: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.aura-app .aa-interest,
+.aura-app .aa-disclosure,
+.aura-app .aa-empty,
+.aura-app .aa-notice {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.aura-app .aa-conv {
+  margin: 8px 14px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.aura-app .aa-thread {
+  padding: 16px 14px 22px;
+}
+
+.aura-app .aa-msg {
+  border-radius: 18px;
+}
+
+.aura-app .aa-msg.is-me {
+  background: linear-gradient(135deg, var(--aa-accent), var(--aa-accent-2));
+}
+
+.aura-app .aa-msg.is-them {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.aura-app .aa-composer {
+  background: rgba(9, 9, 11, 0.84);
+  backdrop-filter: blur(18px);
+}
+
+.aura-app .aa-sheet {
+  background: rgba(20, 19, 22, 0.98);
+  box-shadow: 0 -24px 50px rgba(0, 0, 0, 0.38);
+}
+
+@media (max-width: 420px) {
+  .aura-app .aa-hero-copy h2 {
+    font-size: 24px;
+  }
+
+  .aura-app .aa-people {
+    grid-template-columns: 1fr;
+  }
+
+  .aura-app .aa-person {
+    min-height: auto;
+  }
+}
+
+/* Responsive stability pass */
+.aura-app {
+  min-width: 0;
+}
+
+.aura-app .aa-shell {
+  min-width: 0;
+}
+
+.aura-app .aa-main {
+  min-height: 0;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.aura-app .aa-topbar > div:first-child,
+.aura-app .aa-topbar-actions,
+.aura-app .aa-conv-body,
+.aura-app .aa-person,
+.aura-app .aa-profile-head > div,
+.aura-app .aa-setting > div,
+.aura-app .aa-notif-body {
+  min-width: 0;
+}
+
+.aura-app .aa-btn,
+.aura-app .aa-chip,
+.aura-app .aa-nav a,
+.aura-app .aa-post-meta,
+.aura-app .aa-conv-preview,
+.aura-app .aa-setting-note,
+.aura-app .aa-bio {
+  overflow-wrap: anywhere;
+}
+
+.aura-app .aa-btn svg,
+.aura-app .aa-nav svg,
+.aura-app .aa-post-actions svg,
+.aura-app .aa-kicker svg {
+  flex: 0 0 auto;
+}
+
+.aura-app .aa-people {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+}
+
+.aura-app .aa-profile-actions,
+.aura-app .aa-person-actions,
+.aura-app .aa-sheet-row,
+.aura-app .aa-call-actions {
+  flex-wrap: wrap;
+}
+
+.aura-app .aa-profile-actions .aa-btn,
+.aura-app .aa-person-actions .aa-btn,
+.aura-app .aa-sheet-row .aa-btn,
+.aura-app .aa-call-actions .aa-btn {
+  min-width: 0;
+}
+
+.aura-app .aa-composer {
+  align-items: center;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+.aura-app .aa-composer .aa-input {
+  min-width: 0;
+}
+
+.aura-app .aa-composer .aa-btn {
+  flex: 0 0 46px;
+  min-width: 46px;
+  min-height: 42px;
+  padding-inline: 12px;
+}
+
+.aura-app .aa-msg {
+  overflow-wrap: anywhere;
+}
+
+.aura-app .aa-overlay,
+.aura-app .aa-sheet {
+  max-width: var(--aa-shell);
+  margin-inline: auto;
+}
+
+.aura-app .aa-sheet {
+  max-height: min(78vh, 620px);
+  overflow-y: auto;
+  padding-bottom: calc(22px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 700px) {
+  .aura-app {
+    --aa-shell: min(680px, calc(100vw - 48px));
+    align-items: center;
+    padding: 24px 0;
+  }
+
+  .aura-app .aa-shell {
+    height: min(920px, calc(100vh - 48px));
+    border: 1px solid var(--aa-line);
+    border-radius: 30px;
+    overflow: hidden;
+  }
+
+  .aura-app .aa-topbar,
+  .aura-app .aa-nav {
+    position: relative;
+  }
+
+  .aura-app .aa-main {
+    padding-bottom: 22px;
+  }
+
+  .aura-app .aa-discover-hero {
+    margin: 18px 18px 14px;
+    padding: 22px;
+  }
+
+  .aura-app .aa-hero-copy h2 {
+    font-size: 34px;
+  }
+
+  .aura-app .aa-search-wrap,
+  .aura-app .aa-post,
+  .aura-app .aa-conv {
+    margin-inline: 18px;
+  }
+
+  .aura-app .aa-people,
+  .aura-app .aa-grid {
+    padding-inline: 18px;
+  }
+
+  .aura-app .aa-post-media {
+    height: min(420px, 58vw);
+  }
+}
+
+@media (max-width: 520px) {
+  .aura-app .aa-shell {
+    max-width: none;
+    border-inline: 0;
+  }
+
+  .aura-app .aa-topbar {
+    padding: 13px 12px 10px;
+  }
+
+  .aura-app .aa-topbar h1 {
+    font-size: 20px;
+  }
+
+  .aura-app .aa-topbar-sub {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .aura-app .aa-topbar-actions .aa-btn.is-sm {
+    padding-inline: 10px;
+  }
+
+  .aura-app .aa-discover-hero {
+    margin: 12px 12px 10px;
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .aura-app .aa-hero-copy h2 {
+    font-size: 25px;
+  }
+
+  .aura-app .aa-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .aura-app .aa-hero-stats span {
+    padding: 9px 8px;
+  }
+
+  .aura-app .aa-search-wrap,
+  .aura-app .aa-post,
+  .aura-app .aa-conv {
+    margin-inline: 12px;
+  }
+
+  .aura-app .aa-chips,
+  .aura-app .aa-rail,
+  .aura-app .aa-people,
+  .aura-app .aa-grid,
+  .aura-app .aa-profile-actions,
+  .aura-app .aa-interests,
+  .aura-app .aa-bio {
+    padding-inline: 12px;
+  }
+
+  .aura-app .aa-profile-head {
+    margin: 12px;
+    align-items: center;
+  }
+
+  .aura-app .aa-profile-actions .aa-btn {
+    flex: 1 1 132px;
+  }
+
+  .aura-app .aa-setting,
+  .aura-app .aa-blocked,
+  .aura-app .aa-notif-link {
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .aura-app .aa-topbar {
+    gap: 8px;
+  }
+
+  .aura-app .aa-topbar h1 {
+    font-size: 18px;
+  }
+
+  .aura-app .aa-topbar-sub {
+    max-width: 190px;
+  }
+
+  .aura-app .aa-hero-copy h2 {
+    font-size: 22px;
+  }
+
+  .aura-app .aa-kicker {
+    font-size: 10px;
+  }
+
+  .aura-app .aa-hero-stats b {
+    font-size: 15px;
+  }
+
+  .aura-app .aa-nav a {
+    font-size: 10px;
+  }
+
+  .aura-app .aa-nav-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .aura-app .aa-profile-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .aura-app .aa-profile-stats {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .aura-app .aa-setting {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .aura-app .aa-select.is-inline {
+    width: 100%;
+  }
+
+  .aura-app .aa-msg {
+    max-width: 88%;
+  }
+
+  .aura-app .aa-post-media {
+    height: 230px;
+  }
+}

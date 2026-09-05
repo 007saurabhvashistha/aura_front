@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Heart, MessageCircle, Search, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCompanionRegistry } from '../../admin/hooks/useCompanionRegistry';
 import { useSocialRegistry, type SocialProfile } from '../../admin/hooks/useSocialRegistry';
@@ -63,8 +64,8 @@ export function DiscoverPage() {
   return (
     <>
       <AppHeader
-        title="Discover"
-        subtitle="People and companions you can talk to right now."
+        title="Aura"
+        subtitle="Premium social AI companion network."
         actions={
           <Link className="aa-btn is-sm is-ghost" to="/app/me">
             You
@@ -72,10 +73,34 @@ export function DiscoverPage() {
         }
       />
       <div className="aa-main">
-        <div style={{ padding: '14px 16px 10px' }}>
+        <section className="aa-discover-hero">
+          <div className="aa-hero-copy">
+            <span className="aa-kicker">
+              <Sparkles size={14} /> Live right now
+            </span>
+            <h2>Find the people and companions worth talking to.</h2>
+          </div>
+          <div className="aa-hero-stats" aria-label="Aura network stats">
+            <span>
+              <b>{discoverable.length}</b>
+              Profiles
+            </span>
+            <span>
+              <b>{storyProfiles.length}</b>
+              Stories
+            </span>
+            <span>
+              <b>{feed.length}</b>
+              Posts
+            </span>
+          </div>
+        </section>
+
+        <div className="aa-search-wrap">
+          <Search size={17} aria-hidden="true" />
           <input
-            className="aa-input"
-            placeholder="Search people and interests"
+            className="aa-input aa-search-input"
+            placeholder="Search people, interests, vibes"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             aria-label="Search Aura"
@@ -172,6 +197,18 @@ export function DiscoverPage() {
                 </div>
                 <div className="aa-post-media">{post.mediaLabel}</div>
                 <p className="aa-post-caption">{post.caption}</p>
+                <div className="aa-post-actions" aria-label="Post actions">
+                  <button type="button" aria-label="Like post">
+                    <Heart size={21} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Open comments"
+                    onClick={() => setOpenPost({ profileId: profile.id, postId: post.id })}
+                  >
+                    <MessageCircle size={21} />
+                  </button>
+                </div>
                 <div className="aa-post-meta">
                   <span>{post.likes} likes</span>
                   <span>{post.comments} comments</span>
@@ -211,7 +248,7 @@ function PersonCard({
 
   return (
     <article className="aa-person">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div className="aa-person-avatar-row">
         <Avatar profile={profile} />
       </div>
       <div>

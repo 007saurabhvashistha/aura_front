@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Send, Video } from 'lucide-react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useConversationRegistry } from '../../admin/hooks/useConversationRegistry';
 import { useCompanionRegistry } from '../../admin/hooks/useCompanionRegistry';
@@ -79,12 +80,13 @@ export function ChatThreadPage() {
         subtitle={conversation.participantHandle}
         back={
           <Link className="aa-btn is-sm is-ghost" to="/app/chats">
-            ←
+            <ArrowLeft size={17} />
           </Link>
         }
         actions={
           channelAvailable(conversation.profileId, 'video') ? (
             <button type="button" className="aa-btn is-sm" onClick={onCall} title="Start video call">
+              <Video size={16} />
               Video
             </button>
           ) : null
@@ -152,7 +154,7 @@ export function ChatThreadPage() {
           disabled={isSending}
         />
         <button type="button" className="aa-btn is-primary" onClick={submit} disabled={!draft.trim() || isSending}>
-          {isSending ? 'Sending' : 'Send'}
+          {isSending ? 'Sending' : <Send size={17} />}
         </button>
       </div>
     </>
