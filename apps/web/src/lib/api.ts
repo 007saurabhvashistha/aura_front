@@ -5,7 +5,9 @@ import type { ApiError, ApiResponse, HealthStatus } from '@aura/shared';
  * routed through the Vite dev proxy (see vite.config.ts) — this keeps the
  * httpOnly refresh cookie flowing without cross-site credential issues.
  */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+// Trailing slashes are stripped so a deploy env var like `https://api.example.com/`
+// cannot produce a double-slash path (`//api/v1/...`), which breaks routing and CORS.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
 
 /** Error thrown by the API client, carrying the HTTP status and field errors. */
 export class ApiClientError extends Error {
