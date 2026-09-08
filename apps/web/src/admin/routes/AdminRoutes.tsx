@@ -25,6 +25,7 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { ActivityPage } from '../pages/ActivityPage';
 import { TestCenterPage } from '../pages/TestCenterPage';
 import { TestRunDetailPage } from '../pages/TestRunDetailPage';
+import { RolesPage } from '../pages/RolesPage';
 
 export function AdminRoutes() {
   return (
@@ -37,36 +38,7 @@ export function AdminRoutes() {
           <Route path="/agents/:agentId" element={<AgentDetailPage />} />
           <Route path="/agents/:agentId/:tab" element={<AgentDetailPage />} />
           <Route path="/users" element={<UsersPage />} />
-          <Route
-            path="/users/roles"
-            element={
-              <AdminModulePage
-                title="Roles"
-                subtitle="Define operational role templates for admin and support teams."
-                actions={[{ label: 'Create Role', variant: 'primary' }, { label: 'Import Policy' }]}
-                blocks={[
-                  {
-                    title: 'Role Definitions',
-                    description: 'Keep role vocabulary centralized and auditable.',
-                    points: [
-                      'Platform Admin with global control over all modules.',
-                      'Operator role for day-to-day agent and conversation operations.',
-                      'Moderator role for policy and compliance workflows.',
-                    ],
-                  },
-                  {
-                    title: 'Lifecycle',
-                    description: 'Roles move through draft, approved, and deprecated states.',
-                    points: [
-                      'Require approval before assigning a role to active users.',
-                      'Track who changed role policy and when.',
-                      'Run impact checks before role deprecation.',
-                    ],
-                  },
-                ]}
-              />
-            }
-          />
+          <Route path="/users/roles" element={<RolesPage />} />
           <Route
             path="/users/permissions"
             element={
