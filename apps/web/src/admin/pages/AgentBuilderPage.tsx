@@ -790,7 +790,7 @@ export function AgentBuilderPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="admin-agent-builder space-y-6">
       <PageHeader
         title={isEditMode ? `Edit Agent${draft.name ? ` · ${draft.name}` : ''}` : 'Create Agent'}
         description="Configure identity, behavior, integrations, and launch readiness from a single control workspace."
@@ -814,7 +814,7 @@ export function AgentBuilderPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="admin-agent-builder-grid grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-6">
 
       <div className="rounded-xl border border-admin-border bg-admin-bg-primary p-4">
@@ -1462,7 +1462,7 @@ export function AgentBuilderPage() {
         </div>
       </Card>
 
-      <div className="flex flex-col gap-3 border-t border-admin-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="admin-agent-builder-nav flex flex-col gap-3 border-t border-admin-border pt-4 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="secondary" onClick={prevStep} disabled={isFirstStep}>
           Back
         </Button>
@@ -1479,7 +1479,7 @@ export function AgentBuilderPage() {
       </div>
         </div>
 
-        <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+        <aside className="admin-agent-builder-sidebar space-y-4 xl:sticky xl:top-24 xl:self-start">
           <Card title="Agent Configuration" description="Live contract status across connected systems.">
             <div className="space-y-3">
               {builderSummary.map((item) => (

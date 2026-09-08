@@ -23,10 +23,9 @@ export function Topbar({ onSidebarToggle }: TopbarProps) {
           : 'Overview';
   const routeLabel = adminSegments.length === 0
     ? 'Dashboard'
-    : adminSegments
-        .map((part) => part.replace(/-/g, ' '))
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' / ');
+    : adminSegments.at(-1)!
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   const handleLogout = async () => {
     await logout();
@@ -49,7 +48,7 @@ export function Topbar({ onSidebarToggle }: TopbarProps) {
           </button>
 
           <div className="admin-topbar-title-wrap">
-            <p className="admin-topbar-crumbs">{groupLabel} / {routeLabel}</p>
+            <p className="admin-topbar-crumbs">{groupLabel}{groupLabel === routeLabel ? '' : ` / ${routeLabel}`}</p>
             <h2 className="admin-topbar-title">{routeLabel}</h2>
           </div>
         </div>
