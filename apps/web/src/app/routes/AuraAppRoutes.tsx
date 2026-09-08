@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
-import { NotificationsProvider } from '../data/useNotifications';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { ProfileViewPage } from '../pages/ProfileViewPage';
 import { ChatsPage } from '../pages/ChatsPage';
@@ -12,9 +11,8 @@ import '../styles/aura-app.css';
 
 export function AuraAppRoutes() {
   return (
-    <NotificationsProvider>
-      <AppShell>
-        <Routes>
+    <AppShell>
+      <Routes>
           <Route path="/" element={<DiscoverPage />} />
           <Route path="/u/:profileId" element={<ProfileViewPage />} />
           <Route path="/me" element={<ProfileViewPage self />} />
@@ -24,8 +22,7 @@ export function AuraAppRoutes() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/app" replace />} />
-        </Routes>
-      </AppShell>
-    </NotificationsProvider>
+      </Routes>
+    </AppShell>
   );
 }

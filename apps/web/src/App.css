@@ -867,6 +867,104 @@
   .aura-onboarding__panel { animation: none; }
 }
 
+/* Shared notification popover */
+.notification-menu { position: relative; display: inline-flex; }
+.notification-menu > button { position: relative; }
+.notification-menu__badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  border-radius: 9px;
+  color: #fff;
+  background: #d94468;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+.notification-menu__popover {
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 11px);
+  right: 0;
+  width: min(380px, calc(100vw - 24px));
+  overflow: hidden;
+  border: 1px solid rgba(25, 38, 61, 0.12);
+  border-radius: 8px;
+  color: #172033;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 24px 60px rgba(31, 46, 65, 0.2);
+  backdrop-filter: blur(18px);
+  animation: notification-enter 180ms ease-out both;
+}
+.notification-menu__popover header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(25, 38, 61, 0.09);
+}
+.notification-menu__popover header strong,
+.notification-menu__popover header span { display: block; }
+.notification-menu__popover header strong { font-size: 14px; }
+.notification-menu__popover header span { margin-top: 2px; color: #7f8a9a; font-size: 10px; }
+.notification-menu__popover header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: #c8325a;
+  background: rgba(217, 68, 104, 0.08);
+  font-size: 10px;
+  font-weight: 750;
+}
+.notification-menu__list { max-height: min(430px, 60vh); overflow-y: auto; }
+.notification-menu__item {
+  position: relative;
+  width: 100%;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 0;
+  border-bottom: 1px solid rgba(25, 38, 61, 0.07);
+  border-radius: 0;
+  color: #172033;
+  background: #fff;
+  text-align: left;
+}
+.notification-menu__item:hover { background: #f8fafb; }
+.notification-menu__item.is-unread { background: linear-gradient(90deg, rgba(217, 68, 104, 0.075), rgba(54, 181, 170, 0.035)); }
+.notification-menu__item.is-unread::before { content: ''; position: absolute; left: 4px; width: 4px; height: 4px; border-radius: 50%; background: #d94468; }
+.notification-menu__icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #c8325a; background: rgba(217, 68, 104, 0.09); }
+.notification-menu__body { min-width: 0; }
+.notification-menu__body strong,
+.notification-menu__body > span { display: block; }
+.notification-menu__body strong { margin-bottom: 2px; font-size: 11px; }
+.notification-menu__body > span { color: #5f6b7d; font-size: 11px; line-height: 1.4; }
+.notification-menu__item time { align-self: start; padding-top: 3px; color: #9199a6; font-size: 9px; }
+.notification-menu__state { width: 100%; margin: 0; padding: 28px 16px; border: 0; color: #7f8a9a; background: #fff; font-size: 11px; text-align: center; }
+.notification-menu__state.is-error { color: #c83255; cursor: pointer; }
+.notification-menu__empty { padding: 30px 20px; text-align: center; }
+.notification-menu__empty > span { width: 42px; height: 42px; display: grid; place-items: center; margin: 0 auto 10px; border-radius: 50%; color: #d94468; background: rgba(217, 68, 104, 0.08); }
+.notification-menu__empty strong { display: block; font-size: 12px; }
+.notification-menu__empty p { margin: 4px 0 0; color: #7f8a9a; font-size: 10px; }
+.notification-menu__all { width: 100%; min-height: 42px; border: 0; border-radius: 0; color: #c8325a; background: #fafbfc; font-size: 11px; font-weight: 800; }
+@keyframes notification-enter { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 520px) {
+  .notification-menu__popover { position: fixed; top: 66px; right: 10px; left: 10px; width: auto; }
+}
+
 .card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);

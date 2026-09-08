@@ -7,6 +7,7 @@ import { TestRunsProvider } from '../admin/hooks/useTestRuns';
 import { SocialRegistryProvider } from '../admin/hooks/useSocialRegistry';
 import { ConversationRegistryProvider } from '../admin/hooks/useConversationRegistry';
 import { CompanionRegistryProvider } from '../admin/hooks/useCompanionRegistry';
+import { NotificationsProvider } from '../app/data/useNotifications';
 
 // One platform state tree for BOTH surfaces:
 //   /admin -> control plane (build, configure, validate, observe)
@@ -23,7 +24,9 @@ export function PlatformProviders({ children }: { children: ReactNode }) {
             <TestRunsProvider>
               <SocialRegistryProvider>
                 <ConversationRegistryProvider>
-                  <CompanionRegistryProvider>{children}</CompanionRegistryProvider>
+                  <CompanionRegistryProvider>
+                    <NotificationsProvider>{children}</NotificationsProvider>
+                  </CompanionRegistryProvider>
                 </ConversationRegistryProvider>
               </SocialRegistryProvider>
             </TestRunsProvider>

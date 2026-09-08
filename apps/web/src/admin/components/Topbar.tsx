@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { NotificationMenu } from '../../app/components/NotificationMenu';
 import { Button } from './Button';
 
 interface TopbarProps {
@@ -74,11 +75,7 @@ export function Topbar({ onSidebarToggle }: TopbarProps) {
             ?
           </button>
 
-          <button type="button" className="admin-icon-button" title="Notifications">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
-            </svg>
-          </button>
+          <NotificationMenu triggerClassName="admin-icon-button" />
 
           <div className="admin-topbar-divider" />
 

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { subscribeToEvents } from '../../lib/api';
 import { consumerApi, type NotificationItem } from './consumerApi';
 
 interface NotificationsValue {
@@ -8,6 +9,7 @@ interface NotificationsValue {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  markRead: (notificationId: string) => Promise<void>;
   markAllRead: () => Promise<void>;
 }
 
@@ -37,8 +39,44 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [status]);
 
   useEffect(() => {
+    if (status !== 'authenticated') {
+      setItems([]);
+      setUnread(0);
+      setError(null);
+      return;
+    }
+
     void refresh();
-  }, [refresh]);
+    const unsubscribe = subscribeToEvents('/api/v1/social/me/stream', (event) => {
+      if (event === 'notification') void refresh();
+    });
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void refresh();
+    }, 60_000);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.clearInterval(interval);
+    };
+  }, [refresh, status]);
+
+  const markRead = useCallback(async (notificationId: string): Promise<void> => {
+    const target = items.find((item) => item.id === notificationId);
+    if (!target || target.readAt) return;
+    const readAt = new Date().toISOString();
+    setItems((prev) => prev.map((item) => (item.id === notificationId ? { ...item, readAt } : item)));
+    setUnread((count) => Math.max(0, count - 1));
+    try {
+      await consumerApi.markNotificationRead(notificationId);
+    } catch {
+      void refresh();
+    }
+  }, [items, refresh]);
 
   const markAllRead = useCallback(async (): Promise<void> => {
     if (unread === 0) return;
@@ -52,8 +90,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [refresh, unread]);
 
   const value = useMemo<NotificationsValue>(
-    () => ({ items, unread, loading, error, refresh, markAllRead }),
-    [items, unread, loading, error, refresh, markAllRead],
+    () => ({ items, unread, loading, error, refresh, markRead, markAllRead }),
+    [items, unread, loading, error, refresh, markRead, markAllRead],
   );
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;

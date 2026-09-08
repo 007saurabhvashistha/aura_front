@@ -55,6 +55,8 @@ export const consumerApi = {
   notifications: (): Promise<NotificationFeed> => apiRequest<NotificationFeed>(`${BASE}/me/notifications`),
   markNotificationsRead: (): Promise<null> =>
     apiRequest<null>(`${BASE}/me/notifications/read`, { method: 'POST' }),
+  markNotificationRead: (notificationId: string): Promise<null> =>
+    apiRequest<null>(`${BASE}/me/notifications/${notificationId}/read`, { method: 'POST' }),
   blocked: (): Promise<BlockedProfile[]> => apiRequest<BlockedProfile[]>(`${BASE}/me/blocked`),
   block: (profileId: string): Promise<null> =>
     apiRequest<null>(`${BASE}/profiles/${profileId}/block`, { method: 'POST' }),

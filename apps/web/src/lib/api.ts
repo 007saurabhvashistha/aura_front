@@ -118,42 +118,58 @@ export function subscribeToEvents(
 ): () => void {
   const controller = new AbortController();
 
+  const waitToReconnect = (): Promise<void> =>
+    new Promise((resolve) => {
+      const timer = window.setTimeout(resolve, 3_000);
+      controller.signal.addEventListener(
+        'abort',
+        () => {
+          window.clearTimeout(timer);
+          resolve();
+        },
+        { once: true },
+      );
+    });
+
   void (async () => {
-    try {
-      const headers: Record<string, string> = { accept: 'text/event-stream' };
-      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    while (!controller.signal.aborted) {
+      try {
+        const headers: Record<string, string> = { accept: 'text/event-stream' };
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      const res = await fetch(`${API_BASE_URL}${path}`, {
-        headers,
-        credentials: 'include',
-        signal: controller.signal,
-      });
-      if (!res.ok || !res.body) return;
+        const res = await fetch(`${API_BASE_URL}${path}`, {
+          headers,
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        if (!res.ok || !res.body) throw new Error(`Event stream unavailable: ${res.status}`);
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
 
-        const frames = buffer.split('\n\n');
-        buffer = frames.pop() ?? '';
-        for (const frame of frames) {
-          const event = /^event: (.*)$/m.exec(frame)?.[1];
-          const raw = /^data: (.*)$/m.exec(frame)?.[1];
-          if (!event) continue;
-          try {
-            onEvent(event, raw ? JSON.parse(raw) : null);
-          } catch {
-            // A malformed frame must not tear down the subscription.
+          const frames = buffer.split('\n\n');
+          buffer = frames.pop() ?? '';
+          for (const frame of frames) {
+            const event = /^event: (.*)$/m.exec(frame)?.[1];
+            const raw = /^data: (.*)$/m.exec(frame)?.[1];
+            if (!event) continue;
+            try {
+              onEvent(event, raw ? JSON.parse(raw) : null);
+            } catch {
+              // A malformed frame must not tear down the subscription.
+            }
           }
         }
+      } catch {
+        if (controller.signal.aborted) break;
       }
-    } catch {
-      // Aborts and dropped connections are expected; persistence stays authoritative.
+      await waitToReconnect();
     }
   })();
 

@@ -1,5 +1,6 @@
-import { Search, Bell, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { NotificationMenu } from '../../app/components/NotificationMenu';
 
 export function StudioTopbar() {
   const navigate = useNavigate();
@@ -18,10 +19,7 @@ export function StudioTopbar() {
         New
       </button>
 
-      <button className="s-iconbtn" aria-label="Notifications">
-        <Bell size={18} />
-        <span className="s-dot" />
-      </button>
+      <NotificationMenu triggerClassName="s-iconbtn" />
 
       <button className="s-avatar-chip">
         <span className="s-av">AU</span>
