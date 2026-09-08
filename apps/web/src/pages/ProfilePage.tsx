@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
+import { ArrowLeft, Camera, Languages, Save, SlidersHorizontal, Sparkles, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { FullProfile, UserLanguage, UserPreferences } from '@aura/shared';
 import { useAuth } from '../auth/AuthContext';
@@ -25,8 +26,8 @@ export function ProfilePage() {
 
   if (!draft) {
     return (
-      <main className="app">
-        <p className="muted">Loading profile…</p>
+      <main className="legacy-page legacy-loading">
+        <Sparkles size={24} /><p>Loading your profile...</p>
       </main>
     );
   }
@@ -158,19 +159,24 @@ export function ProfilePage() {
     draft.languages.find((l) => l.languageCode === code)?.proficiency ?? 'none';
 
   return (
-    <main className="app profile">
-      <header className="profile-header">
-        <h1 className="title">Your profile</h1>
-        <Link to="/" className="ghost">
-          ← Home
-        </Link>
+    <main className="legacy-page legacy-profile">
+      <header className="legacy-topbar">
+        <Link to="/app" className="legacy-brand"><span><Sparkles size={19} /></span><strong>Aura</strong></Link>
+        <Link to="/app/me" className="legacy-back"><ArrowLeft size={16} /> Back to profile</Link>
       </header>
 
-      {message && <p className="ok">{message}</p>}
-      {error && <p className="error">{error}</p>}
+      <div className="legacy-profile__intro">
+        <p className="legacy-eyebrow">Personalization</p>
+        <h1>Make Aura feel like yours.</h1>
+        <p>Shape how you appear, communicate, and connect across your experience.</p>
+      </div>
 
-      <section className="card">
-        <h2>Identity</h2>
+      {message && <p className="legacy-feedback is-success">{message}</p>}
+      {error && <p className="legacy-feedback is-error" role="alert">{error}</p>}
+
+      <div className="legacy-profile__grid">
+      <section className="legacy-card legacy-profile__section is-wide">
+        <div className="legacy-section-heading"><div><p className="legacy-eyebrow">Profile essentials</p><h2>Identity</h2></div><UserRound size={21} /></div>
         <label>
           Display name
           <input
@@ -231,13 +237,13 @@ export function ProfilePage() {
             ))}
           </select>
         </label>
-        <button type="button" disabled={busy} onClick={saveProfile}>
-          Save identity
+        <button className="legacy-save" type="button" disabled={busy} onClick={saveProfile}>
+          <Save size={16} /> Save identity
         </button>
       </section>
 
-      <section className="card">
-        <h2>Preferences</h2>
+      <section className="legacy-card legacy-profile__section">
+        <div className="legacy-section-heading"><div><p className="legacy-eyebrow">Conversation</p><h2>Preferences</h2></div><SlidersHorizontal size={21} /></div>
         <label>
           Conversation style
           <select
@@ -284,13 +290,13 @@ export function ProfilePage() {
           />
           Enjoy deep conversations
         </label>
-        <button type="button" disabled={busy} onClick={saveProfile}>
-          Save preferences
+        <button className="legacy-save" type="button" disabled={busy} onClick={saveProfile}>
+          <Save size={16} /> Save preferences
         </button>
       </section>
 
-      <section className="card">
-        <h2>Languages</h2>
+      <section className="legacy-card legacy-profile__section">
+        <div className="legacy-section-heading"><div><p className="legacy-eyebrow">Expression</p><h2>Languages</h2></div><Languages size={21} /></div>
         <ul className="chip-list">
           {SUPPORTED_LANGUAGES.map((l) => (
             <li key={l.code}>
@@ -314,13 +320,13 @@ export function ProfilePage() {
             </li>
           ))}
         </ul>
-        <button type="button" disabled={busy} onClick={saveLanguages}>
-          Save languages
+        <button className="legacy-save" type="button" disabled={busy} onClick={saveLanguages}>
+          <Save size={16} /> Save languages
         </button>
       </section>
 
-      <section className="card">
-        <h2>Interests</h2>
+      <section className="legacy-card legacy-profile__section is-wide">
+        <div className="legacy-section-heading"><div><p className="legacy-eyebrow">Discovery</p><h2>Interests</h2></div><Sparkles size={21} /></div>
         <div className="chips">
           {INTEREST_CATALOGUE.map((interest) => (
             <button
@@ -333,23 +339,24 @@ export function ProfilePage() {
             </button>
           ))}
         </div>
-        <button type="button" disabled={busy} onClick={saveInterests}>
-          Save interests
+        <button className="legacy-save" type="button" disabled={busy} onClick={saveInterests}>
+          <Save size={16} /> Save interests
         </button>
       </section>
 
-      <section className="card">
-        <h2>Avatar</h2>
+      <section className="legacy-card legacy-profile__section is-wide legacy-avatar-section">
+        <div className="legacy-section-heading"><div><p className="legacy-eyebrow">Your image</p><h2>Avatar</h2></div><Camera size={21} /></div>
         {details.avatarUrl ? (
           <p className="muted">Current: {details.avatarUrl}</p>
         ) : (
           <p className="muted">No avatar set.</p>
         )}
         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onAvatarSelected} />
-        <button type="button" className="ghost" disabled={busy} onClick={removeAvatar}>
+        <button type="button" className="legacy-secondary" disabled={busy} onClick={removeAvatar}>
           Remove avatar
         </button>
       </section>
+      </div>
     </main>
   );
 }

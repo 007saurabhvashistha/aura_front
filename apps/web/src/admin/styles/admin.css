@@ -2,8 +2,8 @@
 
 :root {
   --admin-bg-primary: #ffffff;
-  --admin-bg-secondary: #f6f8fc;
-  --admin-bg-tertiary: #eef2f8;
+  --admin-bg-secondary: #f5f7f9;
+  --admin-bg-tertiary: #edf1f4;
 
   --admin-shell-bg: #0e1218;
   --admin-shell-bg-soft: #141a22;
@@ -11,19 +11,19 @@
   --admin-shell-text: #d5dbe7;
   --admin-shell-muted: #92a0b4;
 
-  --admin-text-primary: #121826;
-  --admin-text-secondary: #4f5c72;
-  --admin-text-tertiary: #7b879b;
+  --admin-text-primary: #172033;
+  --admin-text-secondary: #566477;
+  --admin-text-tertiary: #7f8a9a;
 
-  --admin-border: #d8dfeb;
-  --admin-border-strong: #bcc6d6;
+  --admin-border: #dce2e8;
+  --admin-border-strong: #c3ccd6;
 
-  --admin-primary-50: #eef4ff;
-  --admin-primary-100: #d9e8ff;
-  --admin-primary-500: #436df2;
-  --admin-primary-600: #3559cd;
-  --admin-primary-700: #2b48a9;
-  --admin-primary-900: #172951;
+  --admin-primary-50: #fff0f3;
+  --admin-primary-100: #ffdce4;
+  --admin-primary-500: #d94468;
+  --admin-primary-600: #c8325a;
+  --admin-primary-700: #a82449;
+  --admin-primary-900: #64162d;
 
   --admin-success-100: #dcf7eb;
   --admin-success-700: #136944;
@@ -34,9 +34,9 @@
   --admin-teal-100: #dff7f6;
   --admin-teal-700: #0f6967;
 
-  --admin-shadow-xs: 0 1px 2px rgba(17, 24, 39, 0.04);
-  --admin-shadow-sm: 0 6px 14px rgba(17, 24, 39, 0.06);
-  --admin-shadow-md: 0 16px 30px rgba(17, 24, 39, 0.12);
+  --admin-shadow-xs: 0 1px 2px rgba(31, 46, 65, 0.04);
+  --admin-shadow-sm: 0 8px 20px rgba(31, 46, 65, 0.07);
+  --admin-shadow-md: 0 18px 38px rgba(31, 46, 65, 0.12);
 
   --admin-radius-sm: 8px;
   --admin-radius-md: 12px;
@@ -123,7 +123,10 @@ button {
   position: relative;
   display: flex;
   min-height: 100vh;
-  background: var(--admin-bg-secondary);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(232, 112, 135, 0.1), transparent 26%),
+    radial-gradient(circle at 94% 90%, rgba(54, 181, 170, 0.08), transparent 25%),
+    var(--admin-bg-secondary);
 }
 
 .admin-layout-main {
@@ -162,7 +165,10 @@ button {
   height: 100vh;
   flex-direction: column;
   border-right: 1px solid var(--admin-border);
-  background: var(--admin-bg-primary);
+  background:
+    linear-gradient(155deg, rgba(232, 112, 135, 0.1), transparent 32%),
+    linear-gradient(340deg, rgba(54, 181, 170, 0.065), transparent 28%),
+    rgba(255, 255, 255, 0.96);
   overflow-y: auto;
   transition: transform 220ms ease, width 220ms ease;
 }
@@ -267,8 +273,9 @@ button {
 }
 
 .admin-sidebar-link.is-active {
-  background: var(--admin-bg-tertiary);
-  color: var(--admin-text-primary);
+  border-color: rgba(217, 68, 104, 0.1);
+  background: linear-gradient(90deg, rgba(217, 68, 104, 0.11), rgba(233, 133, 92, 0.045));
+  color: var(--admin-primary-600);
 }
 
 .admin-sidebar-accent {
@@ -319,7 +326,7 @@ button {
 .admin-sidebar-profile {
   border: 1px solid var(--admin-border);
   border-radius: 10px;
-  background: var(--admin-bg-secondary);
+  background: rgba(255, 255, 255, 0.72);
   padding: 0.6rem 0.72rem;
 }
 
@@ -349,7 +356,8 @@ button {
   top: 0;
   z-index: 30;
   border-bottom: 1px solid var(--admin-border);
-  background: var(--admin-bg-primary);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
   padding: 0.7rem 1rem;
 }
 
@@ -534,17 +542,18 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  border: 1px solid var(--admin-shell-border);
+  border: 1px solid rgba(217, 68, 104, 0.13);
   border-radius: var(--admin-radius-sm);
-  background: var(--admin-shell-bg-soft);
-  color: var(--admin-shell-text);
+  background: linear-gradient(135deg, rgba(217, 68, 104, 0.09), rgba(54, 181, 170, 0.07));
+  color: var(--admin-text-primary);
   padding: 0.65rem 0.75rem;
   text-align: left;
   cursor: pointer;
 }
 
 .admin-workspace-switcher:hover {
-  border-color: #3c4b61;
+  border-color: rgba(217, 68, 104, 0.3);
+  background: linear-gradient(135deg, rgba(217, 68, 104, 0.13), rgba(54, 181, 170, 0.1));
 }
 
 .admin-topbar-crumbs {

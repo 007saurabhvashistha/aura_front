@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, LockKeyhole, Mic, PhoneOff, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ConnectionState, Room, createLocalAudioTrack } from 'livekit-client';
 import { ApiClientError } from '../lib/api';
@@ -86,21 +87,23 @@ export function ConversationPage() {
   }
 
   return (
-    <main className="conversation-page">
-      <header className="conversation-header">
-        <h1 className="title">Aura</h1>
-        <Link to="/" className="ghost">
-          Back
-        </Link>
+    <main className="legacy-page legacy-conversation">
+      <header className="legacy-topbar">
+        <Link to="/app" className="legacy-brand"><span><Sparkles size={19} /></span><strong>Aura</strong></Link>
+        <Link to="/app" className="legacy-back"><ArrowLeft size={16} /> Back to Aura</Link>
       </header>
 
-      <section className="conversation-card">
-        <h2>Conversation</h2>
-        <div className="conversation-indicator" aria-hidden="true" />
-        <p className="conversation-state">
+      <section className={`legacy-voice ${status === 'connected' ? 'is-live' : ''}`}>
+        <p className="legacy-eyebrow">Private voice space</p>
+        <h1>Talk with Aura</h1>
+        <p className="legacy-voice__intro">A calm space to speak freely. Aura listens, remembers context, and responds with care.</p>
+        <div className="legacy-voice__visual" aria-hidden="true">
+          <span /><span /><span /><span /><span /><span /><span />
+        </div>
+        <p className="legacy-voice__state">
           {status === 'connected' ? 'Listening' : status === 'connecting' ? 'Connecting' : 'Ready'}
         </p>
-        <p className="muted">
+        <p className="legacy-voice__status">
           {status === 'connected'
             ? "I'm listening..."
             : status === 'connecting'
@@ -108,22 +111,22 @@ export function ConversationPage() {
               : 'Tap start to begin speaking with Aura.'}
         </p>
 
-        <div className="conversation-controls">
+        <div className="legacy-voice__controls">
           {(status === 'idle' || status === 'ended' || status === 'failed') && (
-            <button type="button" onClick={startConversation}>
-              Talk to Aura
+            <button className="legacy-call-button" type="button" onClick={startConversation}>
+              <Mic size={19} /> Talk to Aura
             </button>
           )}
 
           {(status === 'connecting' || status === 'connected' || status === 'ending') && (
-            <button type="button" className="danger" onClick={endConversation} disabled={status === 'ending'}>
-              End Call
+            <button type="button" className="legacy-call-button is-danger" onClick={endConversation} disabled={status === 'ending'}>
+              <PhoneOff size={19} /> End call
             </button>
           )}
         </div>
 
-        <p className="muted">Connection: {connectionState}</p>
-        {error && <p className="error">{error}</p>}
+        <div className="legacy-voice__footer"><span><LockKeyhole size={14} /> Private session</span><span>Connection: {connectionState}</span></div>
+        {error && <p className="legacy-feedback is-error" role="alert">{error}</p>}
       </section>
     </main>
   );
