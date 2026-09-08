@@ -113,6 +113,278 @@
   text-align: center;
 }
 
+/* Aura sign-in experience */
+.aura-login {
+  --login-ink: #172033;
+  --login-muted: #687386;
+  --login-line: rgba(25, 38, 61, 0.11);
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--login-ink);
+  background:
+    radial-gradient(circle at 12% 14%, rgba(244, 126, 145, 0.2), transparent 31%),
+    radial-gradient(circle at 89% 84%, rgba(53, 183, 170, 0.17), transparent 30%),
+    linear-gradient(145deg, #fbfafc, #f2f6f8 58%, #fff8f3);
+  font-family: 'Satoshi', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.aura-login__frame {
+  position: relative;
+  width: min(1120px, 100%);
+  min-height: min(720px, calc(100vh - 48px));
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(390px, 0.92fr);
+  overflow: hidden;
+  border: 1px solid var(--login-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 34px 90px rgba(34, 50, 74, 0.17);
+}
+
+.aura-login__story,
+.aura-login__access {
+  position: relative;
+  padding: clamp(34px, 5vw, 68px);
+}
+
+.aura-login__story {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--login-line);
+  background:
+    linear-gradient(145deg, rgba(244, 126, 145, 0.24), transparent 43%),
+    linear-gradient(330deg, rgba(53, 183, 170, 0.2), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0 63px, rgba(31, 47, 70, 0.035) 64px),
+    #f7f4f3;
+}
+
+.aura-login__story::after {
+  content: '';
+  position: absolute;
+  width: 280px;
+  aspect-ratio: 1;
+  right: -100px;
+  top: 13%;
+  border: 1px solid rgba(224, 91, 115, 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 42px rgba(235, 106, 128, 0.045), 0 0 0 84px rgba(53, 183, 170, 0.04);
+  pointer-events: none;
+}
+
+.aura-login__brand,
+.aura-login__mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.aura-login__brand-mark {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, #ff4f7b, #e57579 52%, #45cfc3);
+  box-shadow: 0 10px 28px rgba(219, 70, 104, 0.2);
+}
+
+.aura-login__story-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  margin: 56px 0 36px;
+  animation: auth-rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.aura-login__eyebrow,
+.aura-login__kicker {
+  margin: 0 0 14px;
+  color: #c45b47;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.aura-login__story h1 {
+  margin: 0;
+  max-width: 580px;
+  color: var(--login-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(46px, 5.4vw, 76px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.aura-login__lead {
+  max-width: 480px;
+  margin: 24px 0 0;
+  color: #5f697b;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.aura-login__preview {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(430px, 100%);
+  padding: 16px;
+  border: 1px solid var(--login-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 16px 34px rgba(39, 55, 78, 0.08);
+}
+
+.aura-login__avatar-stack { display: flex; padding-left: 8px; }
+.aura-login__avatar-stack span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  margin-left: -8px;
+  border: 2px solid #f8f5f4;
+  border-radius: 50%;
+  color: #fff;
+  background: #3a3240;
+  font-size: 9px;
+  font-weight: 800;
+}
+.aura-login__avatar-stack span:nth-child(2) { background: #82445d; }
+.aura-login__avatar-stack span:nth-child(3) { background: #276964; }
+.aura-login__preview div:nth-child(2) { min-width: 0; flex: 1; }
+.aura-login__preview strong,
+.aura-login__preview small { display: block; }
+.aura-login__preview strong { color: var(--login-ink); font-size: 13px; }
+.aura-login__preview small { margin-top: 3px; color: var(--login-muted); font-size: 11px; }
+.aura-login__online-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.1); }
+
+.aura-login__trust { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 24px; color: var(--login-muted); font-size: 12px; }
+.aura-login__trust span { display: inline-flex; align-items: center; gap: 7px; }
+.aura-login__trust svg { color: #168e84; }
+
+.aura-login__access {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #ffffff, #fbfcfd);
+}
+
+.aura-login__form-wrap { width: min(390px, 100%); animation: auth-rise 680ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.aura-login__mobile-brand { display: none; margin-bottom: 42px; }
+.aura-login__form-wrap h2 { margin: 0; color: var(--login-ink); font-size: clamp(30px, 3vw, 40px); line-height: 1.1; letter-spacing: 0; }
+.aura-login__subcopy { margin: 12px 0 34px; color: var(--login-muted); font-size: 14px; line-height: 1.6; }
+.aura-login__form { display: grid; gap: 11px; }
+.aura-login__form label { color: #344054; font-size: 12px; font-weight: 700; }
+.aura-login__label-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.aura-login__label-row span { color: #8b94a3; font-size: 11px; }
+
+.aura-login__field {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 15px;
+  border: 1px solid #dce1e8;
+  border-radius: 8px;
+  background: #f8fafc;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.aura-login__field:focus-within {
+  border-color: rgba(220, 78, 108, 0.62);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(220, 78, 108, 0.09);
+}
+
+.aura-login__field > svg { flex: 0 0 auto; color: #7a8494; }
+.aura-login__field input {
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--login-ink);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+.aura-login__field input::placeholder { color: #9aa2af; }
+.aura-login__field input:disabled { opacity: 0.65; }
+
+.aura-login__reveal {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #7a8494;
+  background: transparent;
+}
+.aura-login__reveal:hover { color: #172033; background: #edf1f5; }
+
+.aura-login__error { margin: 4px 0 0; color: #c83255; font-size: 12px; }
+.aura-login__submit {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(105deg, #d94468, #ec765d);
+  box-shadow: 0 18px 38px rgba(207, 62, 96, 0.22);
+  font-weight: 800;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+.aura-login__submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); }
+.aura-login__submit:disabled { opacity: 0.55; }
+.aura-login__signup { margin: 28px 0 0; color: var(--login-muted); font-size: 13px; text-align: center; }
+.aura-login__signup a { color: #c8325a; font-weight: 700; text-decoration: none; }
+.aura-login__signup a:hover { text-decoration: underline; }
+.aura-login__legal { margin: 38px 0 0; color: #9299a6; font-size: 10px; line-height: 1.5; text-align: center; }
+
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 820px) {
+  .aura-login { padding: 0; place-items: stretch; }
+  .aura-login__frame { min-height: 100vh; grid-template-columns: 1fr; border: 0; border-radius: 0; }
+  .aura-login__story { display: none; }
+  .aura-login__access { padding: 36px 22px; }
+  .aura-login__mobile-brand { display: flex; }
+}
+
+@media (max-width: 380px) {
+  .aura-login__access { padding-inline: 18px; }
+  .aura-login__mobile-brand { margin-bottom: 32px; }
+  .aura-login__subcopy { margin-bottom: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-login__story-copy,
+  .aura-login__form-wrap { animation: none; }
+}
+
 .card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);

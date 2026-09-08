@@ -16,7 +16,7 @@ import { PlatformProviders } from '../providers/PlatformProviders';
 /** Redirect authenticated users away from public auth pages. */
 function PublicOnly({ children }: { children: React.ReactNode }) {
   const { status } = useAuth();
-  if (status === 'authenticated') return <Navigate to="/" replace />;
+  if (status === 'authenticated') return <Navigate to="/app" replace />;
   return <>{children}</>;
 }
 

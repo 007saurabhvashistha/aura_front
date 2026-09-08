@@ -24,7 +24,7 @@ export const authApi = {
     const res = await apiRequest<AuthResponse>('/api/v1/auth/login', {
       method: 'POST',
       body: { email, password },
-    });
+    }, false);
     setAccessToken(res.tokens.accessToken);
     return res;
   },
